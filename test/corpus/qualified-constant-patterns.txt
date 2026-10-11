@@ -1,0 +1,49 @@
+================================================================================
+Qualified constants in a record pattern after a switch statement
+================================================================================
+
+void typedWildcard(A a) {
+  switch (a) {
+  }
+  ignore(switch (r) {
+    (E.e2, E.e2) => 3,
+  });
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (function_body
+      (block
+        (switch_statement
+          condition: (parenthesized_expression
+            (identifier))
+          body: (switch_block))
+        (expression_statement
+          (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (switch_expression
+                condition: (parenthesized_expression
+                  (identifier))
+                body: (switch_expression_case
+                  (record_pattern
+                    (constant_pattern
+                      (qualified
+                        (type_identifier)
+                        (identifier)))
+                    (constant_pattern
+                      (qualified
+                        (type_identifier)
+                        (identifier))))
+                  (decimal_integer_literal))))))))))
