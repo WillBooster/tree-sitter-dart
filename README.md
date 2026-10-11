@@ -1,147 +1,131 @@
-# tree-sitter-dart
+# @willbooster/tree-sitter-dart
 
-A [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for
-[Dart](https://dart.dev/), built from the official [Dart language
-specification](https://github.com/dart-lang/language/blob/main/specification/dartLangSpec.tex).
+[![npm version](https://img.shields.io/npm/v/@willbooster/tree-sitter-dart.svg)](https://www.npmjs.com/package/@willbooster/tree-sitter-dart)
+[![license](https://img.shields.io/npm/l/@willbooster/tree-sitter-dart.svg)](https://www.npmjs.com/package/@willbooster/tree-sitter-dart)
+[![Test](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test.yml/badge.svg)](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test.yml)
+[![Test rust](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test-rust.yml/badge.svg)](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test-rust.yml)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![wbfy](https://img.shields.io/badge/wbfy-20.36.11-1e90ff.svg)](https://github.com/WillBooster/shared/tree/main/packages/wbfy)
+[![crates.io](https://img.shields.io/crates/v/willbooster-tree-sitter-dart.svg)](https://crates.io/crates/willbooster-tree-sitter-dart)
 
-Supports Dart through 3.11: records, patterns, class modifiers, extension
-types, null-aware elements, dot shorthands, and digit separators.
+Dart grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter), forked from
+[nielsenko/tree-sitter-dart](https://github.com/nielsenko/tree-sitter-dart). We are grateful
+to its authors and contributors. This is not an official release of that project.
 
-## Correctness
+This fork keeps the grammar and the external scanner of upstream's version 0.2.0 and generates the parser with the
+[WillBooster/tree-sitter](https://github.com/WillBooster/tree-sitter) generator at ABI 16, whose compact parse tables
+need that fork's runtime.
 
-99.98% on a 219,918-file corpus drawn from pub.dev (205,728 files) and
-curated open-source Dart projects (14,190 files):
+## Usage
 
-```
-pub                    205728 files    205705 passed     23 failed  99.99%
-curated                 14190 files     14169 passed     21 failed  99.85%
-TOTAL                  219918 files    219874 passed     44 failed  99.98%
-```
+The npm package ships `tree-sitter-dart.wasm` for
+[@willbooster/web-tree-sitter](https://www.npmjs.com/package/@willbooster/web-tree-sitter) version 1.4.3 or later, which runs in Node.js, Bun, browsers, and Cloudflare Workers. In Node.js and Bun, load the grammar from its path:
 
-The 44 remaining failures are invalid Dart input (NUL bytes in strings,
-hyphens in identifiers, imports after declarations, mustache-template
-files in mason brick directories, fixtures with intentional parse errors).
+```js
+import { fileURLToPath } from 'node:url';
+import { Language, Parser } from '@willbooster/web-tree-sitter';
 
-## AST shape
-
-Each common construct emits a single named subtree, designed for
-structural-search and structural-diff tools. Notable wrappers:
-
-- Postfix chains: `call_expression`, `member_expression`, `index_expression`,
-  `null_aware_member_expression`, `null_aware_index_expression`,
-  `null_assertion_expression`, `instantiation_expression`, plus 7 cascade
-  parallels.
-- Top-level forms: `function_declaration`, `getter_declaration`,
-  `setter_declaration`, `external_*_declaration` variants,
-  `top_level_variable_declaration`, `external_variable_declaration`.
-- Class members: `method_declaration` for body-bearing methods.
-- Types: every type-labeled position emits a single `type` wrapper child;
-  composite types (generics, function types, record types, nullable forms)
-  nest inside it.
-- Hidden supertypes: `_instantiation` groups `new_expression`,
-  `const_object_expression`, `constructor_invocation`.
-
-## Setup
-
-Prerequisites: Node.js 18+, a C compiler.
-
-```sh
-npm install
-npm run build-test
+await Parser.init();
+const parser = new Parser();
+const wasmPath = fileURLToPath(import.meta.resolve('@willbooster/tree-sitter-dart/tree-sitter-dart.wasm'));
+parser.setLanguage(await Language.load(wasmPath));
+const tree = parser.parse('void main() {}\n');
 ```
 
-`build-test` runs `tree-sitter generate`, `node-gyp build`, and
-`tree-sitter test`.
+In browsers, serve both `.wasm` files and load them by URL (the example uses Vite's `?url` imports):
 
-To try the grammar in a browser:
+```js
+import { Language, Parser } from '@willbooster/web-tree-sitter';
+import runtimeUrl from '@willbooster/web-tree-sitter/web-tree-sitter.wasm?url';
+import grammarUrl from '@willbooster/tree-sitter-dart/tree-sitter-dart.wasm?url';
 
-```sh
-npm start
+await Parser.init({ locateFile: () => runtimeUrl });
+const parser = new Parser();
+parser.setLanguage(await Language.load(grammarUrl));
 ```
 
-## Queries
+Cloudflare Workers do not allow compiling Wasm at run time, so import both `.wasm` files as modules, with or without
+Node.js compatibility:
 
-Files in `queries/`:
+```js
+import { Language, Parser } from '@willbooster/web-tree-sitter';
+import runtime from '@willbooster/web-tree-sitter/web-tree-sitter.wasm';
+import grammar from '@willbooster/tree-sitter-dart/tree-sitter-dart.wasm';
 
-- `highlights.scm` - keywords, types, functions, literals, operators,
-  property access, method/function calls, references.
-- `tags.scm` - symbol tagging (classes, methods, constructors, top-level
-  declarations, call references).
-- `locals.scm` - scope and variable resolution.
+await Parser.init({ wasmModule: runtime });
+const parser = new Parser();
+parser.setLanguage(await Language.load(grammar));
+```
 
-## Architecture
+The package also ships `grammar.js`, the queries in `queries/`, and the node types in `src/node-types.json`.
 
-### External scanner
+In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
+[willbooster-tree-sitter](https://crates.io/crates/willbooster-tree-sitter), the runtime this package is tested and
+fuzzed with:
 
-`src/scanner.c` handles three things tree-sitter's generated lexer cannot:
+```toml
+[dependencies]
+tree-sitter = { package = "willbooster-tree-sitter", version = "1.4.3" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "1" }
+```
 
-1. **String interpolation characters.** Dart strings allow `$expr` and
-   `${expr}`; the scanner emits `template_chars_*` tokens for literal text
-   between interpolation boundaries across all string quote styles (single,
-   double, triple-single, triple-double, raw).
-
-2. **Nested block comments.** `/* ... */` can nest; the scanner tracks
-   depth and separates `block_comment` from `documentation_block_comment`
-   (`/** ... */`).
-
-3. **Annotation argument disambiguation.** `@Foo(args)` (no space) is an
-   annotation with arguments; `@override (String, int)` (with space) is an
-   annotation followed by a record type. The scanner emits
-   `annotation_open_paren` only when `(` immediately follows the annotation
-   name, matching the spec's NO_SPACE rule.
-
-The scanner is stateless (serialize/deserialize are no-ops).
+```rust
+let mut parser = tree_sitter::Parser::new();
+parser.set_language(&tree_sitter_dart::LANGUAGE.into())?;
+```
 
 ## Development
 
-After grammar changes:
-
 ```sh
-npm run build-test
+mise install
+bun install --frozen-lockfile
+bun run test/ci-setup # installs Chromium for the browser test
+bun run build/ci
+bun run test
+script/parse-examples
+cargo test
 ```
 
-To auto-update expected parse trees:
+The scripts and tests generate, build, test, and parse with `script/tree-sitter`, the tree-sitter CLI of the
+WillBooster/tree-sitter runtime version locked in `Cargo.lock`, since the generator and the runtime of upstream's CLI are
+not the ones this package ships with. Its first run downloads that CLI from the runtime's GitHub Release, or builds it
+with `cargo` (whose build runs the CMake that `mise.toml` pins) when the download fails or the release has no binary that runs here. Run other CLI commands through it as
+well (e.g. `script/tree-sitter parse --grammar-path . file.dart`).
 
-```sh
-npx tree-sitter test --update
-```
+`bun run generate` records a fresh ABI 16 generation profile from the applicable `test/corpus` cases, then generates
+compact parser tables. It would also profile files tracked in `examples/`, but this repository tracks none: the
+directory holds only the clones `script/parse-examples` makes. The parser also embeds metadata from `tree-sitter.json`.
+After changing a grammar, `tree-sitter.json`, or a corpus case, regenerate and commit `src/`.
+Profiles in `.tmp/generation-profiles/` are temporary and must not be committed. `bun run build-wasm`, `bun run build/ci`,
+and the release build regenerate the parsers before compiling them.
 
-To parse a file:
+`bun run test` runs:
 
-```sh
-npx tree-sitter parse path/to/file.dart
-```
+- the corpus in `test/corpus`, with the native build and with the Wasm build (the first run downloads the WASI SDK);
+- an incremental-parsing check (`test/unit/incremental.test.ts`): `script/fuzz-corpus` runs `tree-sitter fuzz`, which
+  edits each corpus case at random, reparses it, undoes the edits, and reparses again. `TREE_SITTER_SEED`,
+  `TREE_SITTER_ITERATIONS`, and `TREE_SITTER_EDITS` run other or more edits;
+- a check that the real-world Dart files in `examples/` fail to parse exactly as listed in
+  `script/known-failures.txt`, which is empty now. The first run clones the repositories. The example repositories are pinned to commits in
+  `script/parse-examples`. After a grammar change or a moved pin alters that list, `script/parse-examples` rewrites it;
+  review its diff before committing;
+- a performance check (`test/unit/performance.test.ts`) that recovering from an error on each line takes linear
+  time, since consumers parse files while they are being edited. It loads the Wasm build through
+  @willbooster/web-tree-sitter, which `bun run build/ci` rebuilds after regenerating the parser;
+- a check (`test/unit/runtimeVersion.test.ts`) that `@willbooster/web-tree-sitter` in `package.json` and
+  `willbooster-tree-sitter` in `Cargo.lock` are the same version, since the Wasm tests run on the former and the Rust
+  tests, the fuzzer, and the CLI on the latter;
+- tests that load the Wasm build with @willbooster/web-tree-sitter in Chromium (`test/e2e/browser.test.ts`) and in
+  Cloudflare Workers with and without Node.js compatibility (`test/e2e/workers.test.ts`).
 
-### Reference material
+The tests and `script/parse-examples` compile the parser into `.tmp/tree-sitter-lib` rather than the CLI's cache shared
+by every checkout; `script/fuzz-corpus` builds a parser of its own in `.tmp/fuzz` for each run and deletes it
+afterwards.
 
-The [dart-lang/language](https://github.com/dart-lang/language) repo is a submodule (not fetched by default):
+CI also runs these tests on Linux arm64 and macOS, where the CLI compiles the parser and the scanner with the platform's
+C compiler as the crate does for its users, and fuzzes the parser with libFuzzer and sanitizers
+(`.github/workflows/robustness.yml`).
 
-```sh
-git submodule update --init
-```
+### References
 
-Provides `language/specification/dartLangSpec.tex` (formal grammar),
-`language/accepted/` (Dart 3.x feature specs), and `language/working/`
-(in-progress specs).
-
-### Corpus testing
-
-The submodule includes a corpus runner that downloads pub.dev packages
-plus curated open-source Dart projects, then parses each file and reports
-pass/fail counts.
-
-```sh
-cd language/tools/corpus/scripts
-dart pub get
-dart run bin/download_packages.dart   # populate download/pub/
-dart run bin/clone_curated.dart        # populate download/curated/
-dart run bin/report.dart               # parse everything, print summary
-dart run bin/report.dart --details     # also list failing file paths
-```
-
-`report.dart` clears the tree-sitter cache and points the parser-directories
-config at this repo, so it always uses the local grammar build.
-
-## License
-
-[MIT](LICENSE)
+- [Dart language specification](https://dart.dev/guides/language/spec)
