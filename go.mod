@@ -1,5 +1,0 @@
-module github.com/nielsenko/tree-sitter-dart
-
-go 1.22
-
-require github.com/tree-sitter/go-tree-sitter v0.24.0
