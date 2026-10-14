@@ -24,9 +24,8 @@ Known differences from upstream's 0.2.0 parser include:
   `function_expression_body`; upstream attaches it to the arrow function instead. Nested arrow functions follow the
   same rule. Block-bodied function literals still support immediate calls and member access. Public node names and
   the `parameters:` and `body:` fields are preserved.
-- The generator's keyword extraction can change qualified constant-pattern trees on valid Dart and error recovery
-  on invalid input. [Issue #4](https://github.com/WillBooster/tree-sitter-dart/issues/4) tracks these unintended
-  differences separately from the arrow-function correction.
+- Error recovery on invalid input can differ from upstream.
+  [Issue #4](https://github.com/WillBooster/tree-sitter-dart/issues/4) tracks these differences.
 - A NUL character in a line comment or between tokens parses as ordinary text, where upstream's lexer reports an error.
 
 ## Usage
