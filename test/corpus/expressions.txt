@@ -682,3 +682,150 @@ class A extends B {
             (call_expression
               arguments: (arguments
                 (identifier)))))))))
+
+================================================================================
+Arrow function body extends past selectors
+================================================================================
+
+void main() {
+  f = (x) => a.b(x);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (function_expression
+              parameters: (formal_parameter_list
+                (formal_parameter
+                  (identifier)))
+              body: (function_expression_body
+                (call_expression
+                  function: (member_expression
+                    object: (identifier)
+                    property: (identifier))
+                  arguments: (arguments
+                    (identifier)))))))))))
+
+================================================================================
+Arrow function as an operand
+================================================================================
+
+void main() {
+  f = a ?? () => b ?? c;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (if_null_expression
+              (identifier)
+              (function_expression
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
+                  (if_null_expression
+                    (identifier)
+                    (identifier)))))))))))
+
+================================================================================
+Nested arrow functions
+================================================================================
+
+void main() {
+  f = (a) => (b) => c.d;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (function_expression
+              parameters: (formal_parameter_list
+                (formal_parameter
+                  (identifier)))
+              body: (function_expression_body
+                (function_expression
+                  parameters: (formal_parameter_list
+                    (formal_parameter
+                      (identifier)))
+                  body: (function_expression_body
+                    (member_expression
+                      object: (identifier)
+                      property: (identifier))))))))))))
+
+================================================================================
+Block function invoked and selected
+================================================================================
+
+void main() {
+  f = () { return 1; }();
+  g = () {}.toJS;
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (call_expression
+              function: (function_expression
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
+                  (block
+                    (return_statement
+                      (decimal_integer_literal)))))
+              arguments: (arguments))))
+        (expression_statement
+          (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (member_expression
+              object: (function_expression
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
+                  (block)))
+              property: (identifier))))))))
