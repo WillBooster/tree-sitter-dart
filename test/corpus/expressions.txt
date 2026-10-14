@@ -695,27 +695,27 @@ void main() {
 
 (source_file
   (function_declaration
-    (function_signature
-      (type
+    signature: (function_signature
+      return_type: (type
         (void_type))
-      (identifier)
-      (formal_parameter_list))
-    (function_body
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
       (block
         (expression_statement
           (assignment_expression
-            (assignable_expression
+            left: (assignable_expression
               (identifier))
-            (function_expression
-              (formal_parameter_list
+            right: (function_expression
+              parameters: (formal_parameter_list
                 (formal_parameter
                   (identifier)))
-              (function_expression_body
+              body: (function_expression_body
                 (call_expression
-                  (member_expression
-                    (identifier)
-                    (identifier))
-                  (arguments
+                  function: (member_expression
+                    object: (identifier)
+                    property: (identifier))
+                  arguments: (arguments
                     (identifier)))))))))))
 
 ================================================================================
@@ -730,22 +730,22 @@ void main() {
 
 (source_file
   (function_declaration
-    (function_signature
-      (type
+    signature: (function_signature
+      return_type: (type
         (void_type))
-      (identifier)
-      (formal_parameter_list))
-    (function_body
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
       (block
         (expression_statement
           (assignment_expression
-            (assignable_expression
+            left: (assignable_expression
               (identifier))
-            (if_null_expression
+            right: (if_null_expression
               (identifier)
               (function_expression
-                (formal_parameter_list)
-                (function_expression_body
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
                   (if_null_expression
                     (identifier)
                     (identifier)))))))))))
@@ -762,30 +762,30 @@ void main() {
 
 (source_file
   (function_declaration
-    (function_signature
-      (type
+    signature: (function_signature
+      return_type: (type
         (void_type))
-      (identifier)
-      (formal_parameter_list))
-    (function_body
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
       (block
         (expression_statement
           (assignment_expression
-            (assignable_expression
+            left: (assignable_expression
               (identifier))
-            (function_expression
-              (formal_parameter_list
+            right: (function_expression
+              parameters: (formal_parameter_list
                 (formal_parameter
                   (identifier)))
-              (function_expression_body
+              body: (function_expression_body
                 (function_expression
-                  (formal_parameter_list
+                  parameters: (formal_parameter_list
                     (formal_parameter
                       (identifier)))
-                  (function_expression_body
+                  body: (function_expression_body
                     (member_expression
-                      (identifier)
-                      (identifier))))))))))))
+                      object: (identifier)
+                      property: (identifier))))))))))))
 
 ================================================================================
 Block function invoked and selected
@@ -800,32 +800,32 @@ void main() {
 
 (source_file
   (function_declaration
-    (function_signature
-      (type
+    signature: (function_signature
+      return_type: (type
         (void_type))
-      (identifier)
-      (formal_parameter_list))
-    (function_body
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
       (block
         (expression_statement
           (assignment_expression
-            (assignable_expression
+            left: (assignable_expression
               (identifier))
-            (call_expression
-              (function_expression
-                (formal_parameter_list)
-                (function_expression_body
+            right: (call_expression
+              function: (function_expression
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
                   (block
                     (return_statement
                       (decimal_integer_literal)))))
-              (arguments))))
+              arguments: (arguments))))
         (expression_statement
           (assignment_expression
-            (assignable_expression
+            left: (assignable_expression
               (identifier))
-            (member_expression
-              (function_expression
-                (formal_parameter_list)
-                (function_expression_body
+            right: (member_expression
+              object: (function_expression
+                parameters: (formal_parameter_list)
+                body: (function_expression_body
                   (block)))
-              (identifier))))))))
+              property: (identifier))))))))
