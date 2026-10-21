@@ -154,7 +154,6 @@ module.exports = grammar({
     // [$._type_name, $._primary, $.assignable_expression], -- subsumed
     // Parameter ambiguities
     [$._normal_formal_parameters],
-    [$._normal_formal_parameter],
     [$.typed_identifier, $._var_or_type, $._function_formal_parameter],
     [$.record_type_field, $._function_formal_parameter, $._var_or_type],
     [$.record_type_field, $._var_or_type, $._final_var_or_type, $._function_formal_parameter],
@@ -1382,20 +1381,23 @@ module.exports = grammar({
       seq(
         optional($._metadata),
         optional("required"),
-        $.formal_parameter,
+        alias($._unannotated_formal_parameter, $.formal_parameter),
         optional(seq(choice("=", ":"), $._expression)),
       ),
 
     _normal_formal_parameter: ($) =>
       seq(
         optional($._metadata),
+        $._unannotated_formal_parameter,
+      ),
+
+    _unannotated_formal_parameter: ($) =>
         choice(
           $._function_formal_parameter,
           $._simple_formal_parameter,
           $.constructor_param,
           $.super_formal_parameter,
         ),
-      ),
 
     _function_formal_parameter: ($) =>
       seq(
