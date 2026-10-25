@@ -10783,6 +10783,10 @@
           "named": true
         },
         {
+          "type": "multiplicative_expression",
+          "named": true
+        },
+        {
           "type": "null_assertion_expression",
           "named": true
         },
