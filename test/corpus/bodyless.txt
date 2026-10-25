@@ -1,0 +1,230 @@
+================================================================================
+Semicolon bodies for class-like declarations
+================================================================================
+
+class Empty;
+mixin Marker;
+mixin class Reusable;
+enum EmptyEnum;
+extension Identity on Object;
+extension type Id(int value);
+void afterDeclarations() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier))
+  (mixin_declaration
+    name: (identifier))
+  (class_declaration
+    name: (identifier))
+  (enum_declaration
+    name: (identifier))
+  (extension_declaration
+    name: (identifier)
+    class: (type
+      (type_identifier)))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      type: (type
+        (type_identifier))
+      name: (identifier)))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
+
+================================================================================
+Semicolon declaration headers retain type clauses
+================================================================================
+
+class Base<T> {}
+mixin Marker {}
+abstract interface class Protocol<T> {}
+@deprecated
+abstract class Derived<T extends Object> extends Base<T> with Marker implements Protocol<T>;
+base mixin Constrained<T> on Base<T> implements Protocol<T>;
+extension Items<T> on List<T>;
+extension on String;
+extension type const Count(int value) implements int;
+enum Status implements Comparable<Status>;
+void afterHeaders() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    body: (class_body))
+  (mixin_declaration
+    name: (identifier)
+    body: (class_body))
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    body: (class_body))
+  (class_declaration
+    (annotation
+      name: (identifier))
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)
+        bound: (type
+          (type_identifier))))
+    superclass: (superclass
+      type: (type
+        (type_identifier))
+      type: (type
+        (type
+          (type_identifier)))
+      (mixins
+        (type
+          (type_identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier))
+      (type
+        (type
+          (type_identifier)))))
+  (mixin_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    (type
+      (type_identifier))
+    (type
+      (type
+        (type_identifier)))
+    interfaces: (interfaces
+      (type
+        (type_identifier))
+      (type
+        (type
+          (type_identifier)))))
+  (extension_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    class: (type
+      (type_identifier)
+      (type_arguments
+        (type
+          (type_identifier)))))
+  (extension_declaration
+    class: (type
+      (type_identifier)))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      type: (type
+        (type_identifier))
+      name: (identifier))
+    (type
+      (type_identifier)))
+  (enum_declaration
+    name: (identifier)
+    (interfaces
+      (type
+        (type_identifier))
+      (type
+        (type
+          (type_identifier)))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
+
+================================================================================
+Class declarations require a body or semicolon
+:error
+================================================================================
+
+class Missing
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Mixin declarations require a body or semicolon
+:error
+================================================================================
+
+mixin Missing
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Enum declarations require a body or semicolon
+:error
+================================================================================
+
+enum Missing
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Extension declarations require a body or semicolon
+:error
+================================================================================
+
+extension Missing on Object
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Extension type declarations require a body or semicolon
+:error
+================================================================================
+
+extension type Missing(int value)
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Malformed headers recover before a following semicolon declaration
+================================================================================
+
+class Broken extends ;
+class Following;
+void afterError() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (ERROR))
+  (class_declaration
+    name: (identifier))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
