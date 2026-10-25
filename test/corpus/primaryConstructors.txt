@@ -461,3 +461,157 @@ void afterError() {}
       parameters: (formal_parameter_list))
     body: (function_body
       (block))))
+
+================================================================================
+Declaring function-typed parameters use primary parameter contexts
+================================================================================
+
+class CallbackForms(
+  var int first(String value),
+  [final int second(String value) = length]
+);
+class NamedCallback({required final int callback(String value)});
+class Mixed(final int id, {var int callback(String value) = length});
+int length(String value) => value.length;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier)
+          (formal_parameter_list
+            (formal_parameter
+              (type
+                (type_identifier))
+              name: (identifier))))
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))
+          (identifier)))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))
+          (identifier)))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (type_identifier))
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (function_body
+      (member_expression
+        object: (identifier)
+        property: (identifier)))))
+
+================================================================================
+Legacy simple final parameters retain their syntax
+================================================================================
+
+// @dart=3.12
+void f(final int value) {}
+void main() { f(1); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comment)
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (function_body
+      (block)))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (decimal_integer_literal))))))))
+
+================================================================================
+Ordinary function-typed parameters reject final
+:error
+================================================================================
+
+void f(final int callback(String value)) {}
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Ordinary function-typed parameters reject var
+:error
+================================================================================
+
+void f(var int callback(String value)) {}
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Nested callback parameters do not declare primary fields
+:error
+================================================================================
+
+class Bad(final int callback(final int inner(String value)));
+
+--------------------------------------------------------------------------------
