@@ -15,7 +15,7 @@
 ; Extension types
 (extension_type_declaration
   name: (extension_type_name
-    (identifier) @name)) @definition.class
+    . (identifier) @name)) @definition.class
 
 ; Enums
 (enum_declaration

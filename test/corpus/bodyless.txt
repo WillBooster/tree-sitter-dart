@@ -29,9 +29,11 @@ void afterDeclarations() {}
     name: (extension_type_name
       (identifier))
     representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier)))
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
   (function_declaration
     signature: (function_signature
       return_type: (type
@@ -132,9 +134,11 @@ void afterHeaders() {}
     name: (extension_type_name
       (identifier))
     representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier))
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
     (type
       (type_identifier)))
   (enum_declaration

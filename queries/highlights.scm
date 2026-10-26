@@ -118,7 +118,7 @@
 
 (extension_type_declaration
   name: (extension_type_name
-    (identifier) @type))
+    . (identifier) @type))
 
 (enum_declaration
   name: (identifier) @type)
@@ -336,3 +336,7 @@
 
 ((identifier) @variable.builtin
   (#eq? @variable.builtin "super"))
+
+(extension_type_name
+  "."
+  (identifier) @constructor)

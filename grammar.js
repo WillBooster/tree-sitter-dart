@@ -2097,11 +2097,11 @@ module.exports = grammar({
       seq(
         $.identifier,
         optional($.type_parameters),
-        optional(seq(".", $.identifier)),
+        optional(seq(".", choice($.identifier, alias("new", $.identifier)))),
       ),
 
     extension_type_representation: ($) =>
-      seq("(", optional($._metadata), field("type", $.type), field("name", $.identifier), ")"),
+      field("parameters", alias($._primary_formal_parameter_list, $.formal_parameter_list)),
 
     // --- Enums (enhanced, Dart 2.17) ---
 

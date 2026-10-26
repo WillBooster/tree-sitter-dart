@@ -1,0 +1,297 @@
+================================================================================
+Inferred and final extension representations
+================================================================================
+
+extension type Inferred(value);
+extension type Final(final int value);
+extension type FinalInferred(final value);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (identifier)))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          name: (identifier))))))
+
+================================================================================
+Optional and named extension representations
+================================================================================
+
+extension type Positional([final int value = 1]);
+extension type Named({required final int value});
+extension type Defaulted({int value = 2});
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (decimal_integer_literal)))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (decimal_integer_literal))))))
+
+================================================================================
+Named generic const extension header with body part
+================================================================================
+
+const marker = 1;
+extension type const Generic<T>.named(@marker final T value,) {
+  this : assert(value != null);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (top_level_variable_declaration
+    (static_final_declaration_list
+      (static_final_declaration
+        name: (identifier)
+        value: (decimal_integer_literal))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier)
+      (type_parameters
+        (type_parameter
+          name: (type_identifier)))
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (annotation
+            name: (identifier))
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (class_body
+      (class_member
+        (declaration
+          (primary_constructor_body_signature
+            (initializers
+              (initializer_list_entry
+                (assertion
+                  (equality_expression
+                    (identifier)
+                    (null_literal)))))))))))
+
+================================================================================
+Explicit new extension constructor and trailing comma
+================================================================================
+
+extension type Explicit.new(int value,);
+extension type Braced(final int value,) implements int {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier)
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    (type
+      (type_identifier))
+    body: (class_body)))
+
+================================================================================
+Extension representation grammar leaves cardinality and var to analysis
+================================================================================
+
+extension type Empty();
+extension type Multiple(int first, int second);
+extension type Mutable(var int value);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list)))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))))
+
+================================================================================
+Extension representation missing parameter after comma
+================================================================================
+
+extension type Broken(int value,,);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (ERROR)))))
+
+================================================================================
+Extension representation malformed named default
+================================================================================
+
+extension type Broken({int value = });
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (ERROR))))))
+
+================================================================================
+Extension representation modifier does not leak into callbacks
+================================================================================
+
+extension type Broken(int callback(final int nested(String value)));
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier)
+          (formal_parameter_list
+            (ERROR
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))
+              (type
+                (record_type
+                  (record_type_field
+                    type: (type
+                      (type_identifier))
+                    name: (identifier)))))))))))
+
+================================================================================
+Extension header recovery preserves following declaration
+================================================================================
+
+extension type Broken(int value,,);
+class Following;
+void afterError() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (extension_type_name
+      (identifier))
+    representation: (extension_type_representation
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (ERROR))))
+  (class_declaration
+    name: (identifier))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
