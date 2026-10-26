@@ -294,9 +294,10 @@ extension type Broken(const int value);
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
-        (ERROR
+        (formal_parameter
           (type
-            (type_identifier)))
+            (type_identifier))
+          name: (identifier))
         (ERROR)))))
 
 ================================================================================
@@ -312,7 +313,74 @@ extension type Broken(late final int value);
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
-        (ERROR
+        (formal_parameter
           (type
-            (type_identifier)))
+            (type_identifier))
+          name: (identifier))
         (ERROR)))))
+
+================================================================================
+Extension field parameter rejects const modifier
+================================================================================
+
+extension type Broken(const int this.value) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (constructor_param
+            (type
+              (type_identifier))
+            (ERROR
+              (identifier))
+            (identifier)))))
+    body: (class_body)))
+
+================================================================================
+Extension field parameter rejects late final modifier
+================================================================================
+
+extension type Broken(late final int this.value) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (constructor_param
+            (type
+              (type_identifier))
+            (ERROR
+              (identifier))
+            (identifier)))))
+    body: (class_body)))
+
+================================================================================
+Extension super parameter rejects const modifier
+================================================================================
+
+extension type Broken(const int super.value) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (extension_type_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (super_formal_parameter
+            (type
+              (type_identifier))
+            (ERROR
+              (identifier))
+            (identifier)))))
+    body: (class_body)))

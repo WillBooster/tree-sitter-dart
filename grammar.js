@@ -1948,9 +1948,13 @@ module.exports = grammar({
         $._function_formal_parameter,
         $._primary_function_formal_parameter,
         $._primary_simple_formal_parameter,
-        $.constructor_param,
-        $.super_formal_parameter,
+        alias($._primary_constructor_param, $.constructor_param),
+        alias($._primary_super_formal_parameter, $.super_formal_parameter),
       ),
+
+    _primary_constructor_param: ($) => primaryFieldFormalParameter($, "this"),
+
+    _primary_super_formal_parameter: ($) => primaryFieldFormalParameter($, "super"),
 
     _primary_simple_formal_parameter: ($) =>
       seq(
@@ -2426,6 +2430,16 @@ module.exports = grammar({
       ),
   },
 });
+
+function primaryFieldFormalParameter($, receiver) {
+  return seq(
+    optional($.type),
+    receiver,
+    ".",
+    $.identifier,
+    optional(seq($._formal_parameter_part, optional("?"))),
+  );
+}
 
 function formalParameterList(parameters, optionalParameters) {
   return choice(
