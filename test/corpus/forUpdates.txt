@@ -1,0 +1,306 @@
+================================================================================
+Statement update list trailing commas
+================================================================================
+
+void f() { var j = 3; for (var i = 0; i < 3; i++,) {} for (; j > 0; j--, print(j),) {} }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            name: (identifier)
+            value: (decimal_integer_literal)))
+        (for_statement
+          init: (local_variable_declaration
+            (initialized_variable_definition
+              name: (identifier)
+              value: (decimal_integer_literal)))
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          body: (block))
+        (for_statement
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          update: (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (identifier)))
+          body: (block))))))
+
+================================================================================
+Collection for update comma ownership
+================================================================================
+
+Object f() => [for (var i = 0; i < 3; i++,) i, 99]; Object g() => {for (var j = 0; j < 3; j++,) j: j + 1, 99: 100};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (type_identifier))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (list_literal
+        (for_element
+          init: (local_variable_declaration
+            (initialized_variable_definition
+              name: (identifier)
+              value: (decimal_integer_literal)))
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          body: (identifier))
+        (decimal_integer_literal))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (type_identifier))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (set_or_map_literal
+        (for_element
+          init: (local_variable_declaration
+            (initialized_variable_definition
+              name: (identifier)
+              value: (decimal_integer_literal)))
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          body: (pair
+            key: (identifier)
+            value: (additive_expression
+              (identifier)
+              (decimal_integer_literal))))
+        (pair
+          key: (decimal_integer_literal)
+          value: (decimal_integer_literal))))))
+
+================================================================================
+Existing empty and untrailed update lists
+================================================================================
+
+void f() { var i = 0; for (; i < 3;) { i++; } for (; i < 5; i++) {} for (final x in [1, 2]) { print(x); } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            name: (identifier)
+            value: (decimal_integer_literal)))
+        (for_statement
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          body: (block
+            (expression_statement
+              (postfix_expression
+                argument: (assignable_expression
+                  (identifier))))))
+        (for_statement
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          body: (block))
+        (for_statement
+          name: (identifier)
+          value: (list_literal
+            (decimal_integer_literal)
+            (decimal_integer_literal))
+          body: (block
+            (expression_statement
+              (call_expression
+                function: (identifier)
+                arguments: (arguments
+                  (identifier))))))))))
+
+================================================================================
+Lone update comma remains invalid
+================================================================================
+
+void f() { for (;;,) {} }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (for_statement
+          (ERROR)
+          body: (block))))))
+
+================================================================================
+Repeated update comma remains invalid
+================================================================================
+
+void f() { var i = 0; for (; i < 3; i++,,) {} }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            name: (identifier)
+            value: (decimal_integer_literal)))
+        (for_statement
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          (ERROR)
+          body: (block))))))
+
+================================================================================
+Initializer comma is not an update comma
+================================================================================
+
+void f() { var i = 0; for (i = 0,; i < 3; i++) {} }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            name: (identifier)
+            value: (decimal_integer_literal)))
+        (for_statement
+          init: (assignment_expression
+            left: (assignable_expression
+              (identifier))
+            right: (decimal_integer_literal))
+          (ERROR)
+          condition: (relational_expression
+            (identifier)
+            (relational_operator)
+            (decimal_integer_literal))
+          update: (postfix_expression
+            argument: (assignable_expression
+              (identifier)))
+          body: (block))))))
+
+================================================================================
+For-in value comma remains invalid
+================================================================================
+
+void f() { for (final x in [1, 2],) {} }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (ERROR
+          name: (identifier)
+          (ERROR
+            (list_pattern
+              (constant_pattern
+                (decimal_integer_literal))
+              (constant_pattern
+                (decimal_integer_literal))))
+          value: (set_or_map_literal))))))
+
+================================================================================
+Malformed update recovery preserves next declaration
+================================================================================
+
+void broken() { for (;;,) {} }
+void following() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (for_statement
+          (ERROR)
+          body: (block)))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
+

@@ -1534,7 +1534,7 @@ module.exports = grammar({
           ),
           field("condition", optional($._expression)),
           ";",
-          commaSep(field("update", $._expression)),
+          commaSepTrailingComma(field("update", $._expression)),
         ),
         // Pattern for-in loop (Dart 3.0)
         seq(
