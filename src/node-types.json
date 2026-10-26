@@ -4717,21 +4717,7 @@
         "required": true,
         "types": [
           {
-            "type": "extension_type_name",
-            "named": true
-          },
-          {
             "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "representation": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "extension_type_representation",
             "named": true
           }
         ]
@@ -4756,62 +4742,7 @@
           "named": true
         },
         {
-          "type": "type",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "extension_type_name",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "type_parameters",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "extension_type_representation",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "type",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "annotation",
+          "type": "primary_constructor",
           "named": true
         }
       ]

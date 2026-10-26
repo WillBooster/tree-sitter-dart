@@ -153,14 +153,16 @@ extension type Meters(double value) implements double {}
 
 (source_file
   (extension_type_declaration
-    name: (extension_type_name
-      (identifier))
-    representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier))
-    (type
-      (type_identifier))
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier)))
     body: (class_body)))
 
 ================================================================================
@@ -534,21 +536,23 @@ extension type JSArray<T extends JSAny?>._(JSArrayRepType _jsArray) implements J
 
 (source_file
   (extension_type_declaration
-    name: (extension_type_name
-      (identifier)
-      (type_parameters
-        (type_parameter
-          name: (type_identifier)
-          bound: (type
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)
+        bound: (type
+          (type_identifier))
+        bound: (type)))
+    (primary_constructor
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
             (type_identifier))
-          bound: (type)))
-      (identifier))
-    representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier))
-    (type
-      (type_identifier))
+          name: (identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier)))
     body: (class_body)))
 
 ================================================================================
@@ -598,16 +602,18 @@ extension type ExtensionType(@annotation int id) implements int {}
 
 (source_file
   (extension_type_declaration
-    name: (extension_type_name
-      (identifier))
-    representation: (extension_type_representation
-      (annotation
-        name: (identifier))
-      type: (type
-        (type_identifier))
-      name: (identifier))
-    (type
-      (type_identifier))
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (annotation
+            name: (identifier))
+          (type
+            (type_identifier))
+          name: (identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier)))
     body: (class_body)))
 
 ================================================================================

@@ -26,12 +26,13 @@ void afterDeclarations() {}
     class: (type
       (type_identifier)))
   (extension_type_declaration
-    name: (extension_type_name
-      (identifier))
-    representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier)))
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
   (function_declaration
     signature: (function_signature
       return_type: (type
@@ -129,14 +130,16 @@ void afterHeaders() {}
     class: (type
       (type_identifier)))
   (extension_type_declaration
-    name: (extension_type_name
-      (identifier))
-    representation: (extension_type_representation
-      type: (type
-        (type_identifier))
-      name: (identifier))
-    (type
-      (type_identifier)))
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier))))
   (enum_declaration
     name: (identifier)
     (interfaces

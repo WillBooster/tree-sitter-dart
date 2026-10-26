@@ -161,9 +161,8 @@ module.exports = grammar({
     [$._var_or_type, $._final_var_or_type],
     [$._final_const_var_or_type, $._final_var_or_type],
     [$._primary_optional_formal_parameters, $._built_in_identifier],
+    [$._function_formal_parameter, $._primary_simple_formal_parameter, $._built_in_identifier],
     [$._primary_function_formal_parameter, $._type_name],
-    [$._primary_function_formal_parameter, $._var_or_type],
-    [$._primary_function_formal_parameter, $._final_const_var_or_type],
     [$.record_type_field, $._final_var_or_type],
     [$._final_var_or_type],
     // Type parameter vs type name
@@ -1945,7 +1944,25 @@ module.exports = grammar({
       seq(optional($._metadata), $._primary_unannotated_formal_parameter),
 
     _primary_unannotated_formal_parameter: ($) =>
-      choice($._unannotated_formal_parameter, $._primary_function_formal_parameter),
+      choice(
+        $._function_formal_parameter,
+        $._primary_function_formal_parameter,
+        $._primary_simple_formal_parameter,
+        alias($._primary_constructor_param, $.constructor_param),
+        alias($._primary_super_formal_parameter, $.super_formal_parameter),
+      ),
+
+    _primary_constructor_param: ($) => primaryFieldFormalParameter($, "this"),
+
+    _primary_super_formal_parameter: ($) => primaryFieldFormalParameter($, "super"),
+
+    _primary_simple_formal_parameter: ($) =>
+      seq(
+        optional("covariant"),
+        optional(choice("var", "final")),
+        optional($.type),
+        field("name", $.identifier),
+      ),
 
     _primary_function_formal_parameter: ($) =>
       seq(
@@ -2075,10 +2092,8 @@ module.exports = grammar({
           optional($._metadata),
           "extension",
           "type",
-          optional("const"),
-          field("name", $.extension_type_name),
-          field("representation", $.extension_type_representation),
-          optional(seq("implements", commaSep1($.type))),
+          primaryConstructorHeader($, field("type_parameters", $.type_parameters), true),
+          optional(field("interfaces", $.interfaces)),
           choice(field("body", $.class_body), ";"),
         ),
         seq(
@@ -2092,16 +2107,6 @@ module.exports = grammar({
           field("body", $.class_body),
         ),
       ),
-
-    extension_type_name: ($) =>
-      seq(
-        $.identifier,
-        optional($.type_parameters),
-        optional(seq(".", $.identifier)),
-      ),
-
-    extension_type_representation: ($) =>
-      seq("(", optional($._metadata), field("type", $.type), field("name", $.identifier), ")"),
 
     // --- Enums (enhanced, Dart 2.17) ---
 
@@ -2426,6 +2431,16 @@ module.exports = grammar({
   },
 });
 
+function primaryFieldFormalParameter($, receiver) {
+  return seq(
+    optional($.type),
+    receiver,
+    ".",
+    $.identifier,
+    optional(seq($._formal_parameter_part, optional("?"))),
+  );
+}
+
 function formalParameterList(parameters, optionalParameters) {
   return choice(
     seq("(", ")"),
@@ -2435,9 +2450,10 @@ function formalParameterList(parameters, optionalParameters) {
   );
 }
 
-function primaryConstructorHeader($, typeParameters) {
+function primaryConstructorHeader($, typeParameters, constructorRequired = false) {
   const name = seq(field("name", $.identifier), optional(typeParameters));
-  return choice(name, seq(optional("const"), name, $.primary_constructor));
+  const constructor = seq(optional("const"), name, $.primary_constructor);
+  return constructorRequired ? constructor : choice(name, constructor);
 }
 
 function sep1(rule, separator) {
