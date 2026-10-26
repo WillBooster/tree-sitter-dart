@@ -99,6 +99,29 @@
 (redirecting_factory_constructor_signature
   (identifier) @name) @definition.method
 
+((primary_constructor
+  name: (identifier) @name) @definition.method
+  (#not-eq? @name "new"))
+
+[
+  (class_declaration
+    name: (identifier) @name
+    (primary_constructor !name)) @definition.method
+  (enum_declaration
+    name: (identifier) @name
+    (primary_constructor !name)) @definition.method
+]
+
+([
+  (class_declaration
+    name: (identifier) @name
+    (primary_constructor name: (identifier) @_constructor)) @definition.method
+  (enum_declaration
+    name: (identifier) @name
+    (primary_constructor name: (identifier) @_constructor)) @definition.method
+]
+  (#eq? @_constructor "new"))
+
 ; Typedefs
 (type_alias
   (type_identifier) @name) @definition.type

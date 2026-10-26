@@ -157,9 +157,13 @@ module.exports = grammar({
     [$.typed_identifier, $._var_or_type, $._function_formal_parameter],
     [$.record_type_field, $._function_formal_parameter, $._var_or_type],
     [$.record_type_field, $._var_or_type, $._final_var_or_type, $._function_formal_parameter],
-    [$._var_or_type, $._final_var_or_type],
     [$._var_or_type, $._final_var_or_type, $._function_formal_parameter],
+    [$._var_or_type, $._final_var_or_type],
     [$._final_const_var_or_type, $._final_var_or_type],
+    [$._primary_optional_formal_parameters, $._built_in_identifier],
+    [$._primary_function_formal_parameter, $._type_name],
+    [$._primary_function_formal_parameter, $._var_or_type],
+    [$._primary_function_formal_parameter, $._final_const_var_or_type],
     [$.record_type_field, $._final_var_or_type],
     [$._final_var_or_type],
     // Type parameter vs type name
@@ -1349,18 +1353,7 @@ module.exports = grammar({
       seq(optional($.type_parameters), $.formal_parameter_list),
 
     formal_parameter_list: ($) =>
-      choice(
-        seq("(", ")"),
-        seq("(", $._normal_formal_parameters, optional(","), ")"),
-        seq(
-          "(",
-          $._normal_formal_parameters,
-          ",",
-          $.optional_formal_parameters,
-          ")",
-        ),
-        seq("(", $.optional_formal_parameters, ")"),
-      ),
+      formalParameterList($._normal_formal_parameters, $.optional_formal_parameters),
 
     _normal_formal_parameters: ($) => commaSep1($.formal_parameter),
 
@@ -1728,10 +1721,15 @@ module.exports = grammar({
         $.factory_constructor_signature,
         seq(optional("static"), choice($.function_signature, $.getter_signature, $.setter_signature)),
         $.operator_signature,
+        $.primary_constructor_body_signature,
       ),
+
+    primary_constructor_body_signature: ($) =>
+      seq("this", optional($.initializers)),
 
     declaration: ($) =>
       choice(
+        $.primary_constructor_body_signature,
         seq(
           $.constant_constructor_signature,
           optional(choice($.redirection, $.initializers)),
@@ -1904,8 +1902,7 @@ module.exports = grammar({
           optional($._metadata),
           optional("augment"),
           choice($._class_modifiers, $._mixin_class_modifiers),
-          field("name", $.identifier),
-          optional(field("type_parameters", $.type_parameters)),
+          primaryConstructorHeader($, field("type_parameters", $.type_parameters)),
           optional(field("superclass", $.superclass)),
           optional(field("interfaces", $.interfaces)),
           choice(field("body", $.class_body), ";"),
@@ -1931,6 +1928,56 @@ module.exports = grammar({
 
     _mixin_class_modifiers: ($) =>
       seq(optional("abstract"), optional("base"), "mixin", "class"),
+
+    primary_constructor: ($) =>
+      seq(
+        optional(seq(".", field("name", choice($.identifier, alias("new", $.identifier))))),
+        field("parameters", alias($._primary_formal_parameter_list, $.formal_parameter_list)),
+      ),
+
+    _primary_formal_parameter_list: ($) =>
+      formalParameterList(
+        commaSep1(alias($._primary_formal_parameter, $.formal_parameter)),
+        alias($._primary_optional_formal_parameters, $.optional_formal_parameters),
+      ),
+
+    _primary_formal_parameter: ($) =>
+      seq(optional($._metadata), $._primary_unannotated_formal_parameter),
+
+    _primary_unannotated_formal_parameter: ($) =>
+      choice($._unannotated_formal_parameter, $._primary_function_formal_parameter),
+
+    _primary_function_formal_parameter: ($) =>
+      seq(
+        optional("covariant"),
+        choice("var", "final"),
+        optional($.type),
+        $.identifier,
+        $._formal_parameter_part,
+        optional("?"),
+      ),
+
+    _primary_optional_formal_parameters: ($) =>
+      choice(
+        seq(
+          "[",
+          commaSep1TrailingComma(seq(
+            alias($._primary_formal_parameter, $.formal_parameter),
+            optional(seq("=", $._expression)),
+          )),
+          "]",
+        ),
+        seq(
+          "{",
+          commaSep1TrailingComma(seq(
+            optional($._metadata),
+            optional("required"),
+            alias($._primary_unannotated_formal_parameter, $.formal_parameter),
+            optional(seq(choice("=", ":"), $._expression)),
+          )),
+          "}",
+        ),
+      ),
 
     class_body: ($) =>
       seq(
@@ -2063,8 +2110,7 @@ module.exports = grammar({
         optional($._metadata),
         optional("augment"),
         "enum",
-        field("name", $.identifier),
-        optional($.type_parameters),
+        primaryConstructorHeader($, $.type_parameters),
         optional($.mixins),
         optional($.interfaces),
         choice(field("body", $.enum_body), ";"),
@@ -2379,6 +2425,20 @@ module.exports = grammar({
       ),
   },
 });
+
+function formalParameterList(parameters, optionalParameters) {
+  return choice(
+    seq("(", ")"),
+    seq("(", parameters, optional(","), ")"),
+    seq("(", parameters, ",", optionalParameters, ")"),
+    seq("(", optionalParameters, ")"),
+  );
+}
+
+function primaryConstructorHeader($, typeParameters) {
+  const name = seq(field("name", $.identifier), optional(typeParameters));
+  return choice(name, seq(optional("const"), name, $.primary_constructor));
+}
 
 function sep1(rule, separator) {
   return seq(rule, repeat(seq(separator, rule)));

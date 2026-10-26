@@ -1,0 +1,617 @@
+================================================================================
+Primary constructor headers retain class names and constructor names
+================================================================================
+
+class Pair<T>(final T first, final T second);
+class const Point.named(final int x, final int y);
+class Mutable(var int x, var y);
+class Explicit.new(final int id);
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier)))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (formal_parameter
+          name: (identifier)))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))))
+
+================================================================================
+Primary constructors accept optional named and function-typed declaring parameters
+================================================================================
+
+class Optional(final int count, [final String label = 'default']);
+class Named({required final int count, final String label = 'default'});
+class Callback(final int invoke(String value));
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (string_literal
+            (string_literal_single_quotes
+              (template_chars_single_single)))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (formal_parameter
+            (type
+              (type_identifier))
+            name: (identifier))
+          (string_literal
+            (string_literal_single_quotes
+              (template_chars_single_single)))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier)
+          (formal_parameter_list
+            (formal_parameter
+              (type
+                (type_identifier))
+              name: (identifier))))))))
+
+================================================================================
+Primary constructor bodies initialize fields and execute statements
+================================================================================
+
+class Computed(int value) {
+  final int doubled;
+  this : doubled = value * 2;
+}
+class Checked(var int x) {
+  this : assert(x >= 0) {
+    x += 1;
+  }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (class_body
+      (class_member
+        (declaration
+          (type
+            (type_identifier))
+          (initialized_identifier_list
+            (initialized_identifier
+              name: (identifier)))))
+      (class_member
+        (declaration
+          (primary_constructor_body_signature
+            (initializers
+              (initializer_list_entry
+                (field_initializer
+                  name: (identifier)
+                  value: (multiplicative_expression
+                    (identifier)
+                    (decimal_integer_literal))))))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (class_body
+      (class_member
+        (method_declaration
+          signature: (method_signature
+            (primary_constructor_body_signature
+              (initializers
+                (initializer_list_entry
+                  (assertion
+                    (relational_expression
+                      (identifier)
+                      (relational_operator)
+                      (decimal_integer_literal)))))))
+          body: (function_body
+            (block
+              (expression_statement
+                (assignment_expression
+                  left: (assignable_expression
+                    (identifier))
+                  right: (decimal_integer_literal))))))))))
+
+================================================================================
+Primary constructors retain super parameters generic types and clauses
+================================================================================
+
+class Base {
+  final int id;
+  Base(this.id);
+}
+class Child(super.id) extends Base;
+mixin Tagged {}
+abstract interface class Protocol<T> {}
+class Generic<T>(final T value) extends Base with Tagged implements Protocol<T> {
+  this : super(0);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (type
+            (type_identifier))
+          (initialized_identifier_list
+            (initialized_identifier
+              name: (identifier)))))
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list
+              (formal_parameter
+                (constructor_param
+                  (identifier)))))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (super_formal_parameter
+            (identifier)))))
+    superclass: (superclass
+      type: (type
+        (type_identifier))))
+  (mixin_declaration
+    name: (identifier)
+    body: (class_body))
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    body: (class_body))
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    superclass: (superclass
+      type: (type
+        (type_identifier))
+      (mixins
+        (type
+          (type_identifier))))
+    interfaces: (interfaces
+      (type
+        (type_identifier))
+      (type
+        (type
+          (type_identifier))))
+    body: (class_body
+      (class_member
+        (declaration
+          (primary_constructor_body_signature
+            (initializers
+              (initializer_list_entry
+                (arguments
+                  (decimal_integer_literal))))))))))
+
+================================================================================
+Enums have primary constructors and initializer body parts
+================================================================================
+
+enum const Code(final int number) {
+  ok(200), failed(500);
+  this : assert(number > 0);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (enum_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (enum_body
+      (enum_constant
+        name: (identifier)
+        (arguments
+          (decimal_integer_literal)))
+      (enum_constant
+        name: (identifier)
+        (arguments
+          (decimal_integer_literal)))
+      (class_member
+        (declaration
+          (primary_constructor_body_signature
+            (initializers
+              (initializer_list_entry
+                (assertion
+                  (relational_expression
+                    (identifier)
+                    (relational_operator)
+                    (decimal_integer_literal)))))))))))
+
+================================================================================
+Primary constructor body parts accept metadata and enum constructor names
+================================================================================
+
+class Marker { const Marker(); }
+class Annotated(final int id) {
+  @Marker()
+  this {}
+}
+class Empty() { this; }
+enum const Status.named(final int code) {
+  ready.named(1), done.named(2);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (class_body
+      (class_member
+        (method_declaration
+          (annotation
+            name: (identifier)
+            (annotation_arguments
+              (annotation_open_paren)))
+          signature: (method_signature
+            (primary_constructor_body_signature))
+          body: (function_body
+            (block))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list))
+    body: (class_body
+      (class_member
+        (declaration
+          (primary_constructor_body_signature)))))
+  (enum_declaration
+    name: (identifier)
+    (primary_constructor
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (enum_body
+      (enum_constant
+        name: (identifier)
+        (identifier)
+        (arguments
+          (decimal_integer_literal)))
+      (enum_constant
+        name: (identifier)
+        (identifier)
+        (arguments
+          (decimal_integer_literal))))))
+
+================================================================================
+Class header const requires primary parameters
+:error
+================================================================================
+
+class const Missing {}
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Enum header const requires primary parameters
+:error
+================================================================================
+
+enum const Missing { value }
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+A named primary constructor requires parameters
+:error
+================================================================================
+
+class Missing.named;
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+A primary parameter list cannot start with a comma
+:error
+================================================================================
+
+class Bad(,);
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+A primary constructor body initializer requires an entry
+:error
+================================================================================
+
+class Bad(int x) { this : ; }
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Malformed primary constructor names recover before following declarations
+================================================================================
+
+class Broken.named;
+class Following;
+void afterError() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (ERROR
+      (identifier)))
+  (class_declaration
+    name: (identifier))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
+
+================================================================================
+Declaring function-typed parameters use primary parameter contexts
+================================================================================
+
+class CallbackForms(
+  var int first(String value),
+  [final int second(String value) = length]
+);
+class NamedCallback({required final int callback(String value)});
+class Mixed(final int id, {var int callback(String value) = length});
+int length(String value) => value.length;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier)
+          (formal_parameter_list
+            (formal_parameter
+              (type
+                (type_identifier))
+              name: (identifier))))
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))
+          (identifier)))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))))))
+  (class_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))
+        (optional_formal_parameters
+          (formal_parameter
+            (type
+              (type_identifier))
+            (identifier)
+            (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier))))
+          (identifier)))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (type_identifier))
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (function_body
+      (member_expression
+        object: (identifier)
+        property: (identifier)))))
+
+================================================================================
+Legacy simple final parameters retain their syntax
+================================================================================
+
+// @dart=3.12
+void f(final int value) {}
+void main() { f(1); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comment)
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (function_body
+      (block)))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block
+        (expression_statement
+          (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (decimal_integer_literal))))))))
+
+================================================================================
+Ordinary function-typed parameters reject final
+:error
+================================================================================
+
+void f(final int callback(String value)) {}
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Ordinary function-typed parameters reject var
+:error
+================================================================================
+
+void f(var int callback(String value)) {}
+
+--------------------------------------------------------------------------------
+
+
+================================================================================
+Nested callback parameters do not declare primary fields
+:error
+================================================================================
+
+class Bad(final int callback(final int inner(String value)));
+
+--------------------------------------------------------------------------------
