@@ -14,8 +14,7 @@
 
 ; Extension types
 (extension_type_declaration
-  name: (extension_type_name
-    . (identifier) @name)) @definition.class
+  name: (identifier) @name) @definition.class
 
 ; Enums
 (enum_declaration
@@ -110,6 +109,9 @@
   (enum_declaration
     name: (identifier) @name
     (primary_constructor !name)) @definition.method
+  (extension_type_declaration
+    name: (identifier) @name
+    (primary_constructor !name)) @definition.method
 ]
 
 ([
@@ -117,6 +119,9 @@
     name: (identifier) @name
     (primary_constructor name: (identifier) @_constructor)) @definition.method
   (enum_declaration
+    name: (identifier) @name
+    (primary_constructor name: (identifier) @_constructor)) @definition.method
+  (extension_type_declaration
     name: (identifier) @name
     (primary_constructor name: (identifier) @_constructor)) @definition.method
 ]
