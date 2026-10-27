@@ -22,6 +22,17 @@ const cases = [
     operators: [],
   },
   {
+    source: 'void f(C value, C? nullable) { foo<int>(1); value.bar<int>(1); nullable?.bar<int>(1); C.qux<int>(1); }',
+    calls: ['foo', 'bar', 'bar', 'qux'],
+    operators: [],
+  },
+  {
+    source:
+      'void f(C value, C? nullable) { final first = foo<int>; final second = value.bar<int>; final third = (nullable?.bar)!<int>; final fourth = C.qux<int>; }',
+    calls: [],
+    operators: [],
+  },
+  {
     source: 'class C { C operator +(C other) => this; bool operator <=(C other) => true; }',
     calls: [],
     operators: ['+', '<='],

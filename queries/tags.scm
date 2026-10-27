@@ -167,5 +167,9 @@
 
 (call_expression
   function: (instantiation_expression
-    function: (static_member_shorthand
-      (identifier) @name))) @reference.call
+    function: [
+      (identifier) @name
+      (member_expression property: (identifier) @name)
+      (null_aware_member_expression property: (identifier) @name)
+      (static_member_shorthand (identifier) @name)
+    ])) @reference.call
