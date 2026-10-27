@@ -408,6 +408,40 @@ mod tests {
         }
     }
 
+    #[test]
+    fn edits_inside_an_annotated_record_return_match_a_fresh_parse() {
+        let before = "@v/*x*/(int,int) f()=>(1,2);";
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&super::LANGUAGE.into()).unwrap();
+        for offset in [8, 11, 12, 15, 16, 19, 20, 22, 23, 24, 25, 26, 27] {
+            let after = format!("{} {}", &before[..offset], &before[offset..]);
+            let mut old = parser.parse(before, None).unwrap();
+            old.edit(&tree_sitter::InputEdit {
+                start_byte: offset,
+                old_end_byte: offset,
+                new_end_byte: offset + 1,
+                start_position: tree_sitter::Point::new(0, offset),
+                old_end_position: tree_sitter::Point::new(0, offset),
+                new_end_position: tree_sitter::Point::new(0, offset + 1),
+            });
+            let incremental = parser.parse(&after, Some(&old)).unwrap();
+            let fresh = parse_valid(&after);
+            assert_eq!(
+                incremental.root_node().to_sexp(),
+                fresh.root_node().to_sexp(),
+                "{after}"
+            );
+            let signature = incremental
+                .root_node()
+                .named_child(0)
+                .unwrap()
+                .child_by_field_name("signature")
+                .unwrap();
+            let return_type = signature.child_by_field_name("return_type").unwrap();
+            assert_eq!(return_type.named_child(0).unwrap().kind(), "record_type");
+        }
+    }
+
     fn assert_new_constructor<'tree>(
         tree: &'tree tree_sitter::Tree,
         source: &str,

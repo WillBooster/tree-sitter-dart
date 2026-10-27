@@ -11,6 +11,10 @@ enum TokenType {
   ANNOTATION_OPEN_PAREN,
   INTERPOLATION_START,
   INSTANTIATION_CLOSE,
+  ANNOTATION_END,
+  ANNOTATION_DOT,
+  ANNOTATION_TYPE_ARGUMENTS,
+  ANNOTATION_ARGUMENTS_START,
   // Never emitted: recovery enables every external token, preserving the template-scanner path.
   ERROR_RECOVERY,
 };
@@ -22,6 +26,8 @@ unsigned tree_sitter_dart_external_scanner_serialize(void *p, char *buffer) { (v
 void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsigned n) { (void)p; (void)b; (void)n; }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
+static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
+static bool scan_interpolation_start(TSLexer *lexer);
 static bool scan_multiline_comments(TSLexer *lexer);
 static bool is_whitespace(int32_t c);
 static void advance(TSLexer *lexer);
@@ -34,19 +40,18 @@ bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
   (void)payload;
   if (valid_symbols[INTERPOLATION_START] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '$') {
-    advance(lexer);
-    lexer->mark_end(lexer);
-    int32_t next = lexer->lookahead;
-    if (next != '{' && next != '_' && !(next >= 'a' && next <= 'z') && !(next >= 'A' && next <= 'Z')) return false;
-    lexer->result_symbol = INTERPOLATION_START;
-    return true;
+    return scan_interpolation_start(lexer);
   }
   if (valid_symbols[TEMPLATE_CHARS_DOUBLE] || valid_symbols[TEMPLATE_CHARS_SINGLE] ||
       valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) {
     return scan_templates(lexer, valid_symbols);
   }
 
-  // Whitespace separates @override from a following record type's parenthesis.
+  if (!valid_symbols[ERROR_RECOVERY] && (valid_symbols[ANNOTATION_END] ||
+      valid_symbols[ANNOTATION_DOT] || valid_symbols[ANNOTATION_TYPE_ARGUMENTS] || valid_symbols[ANNOTATION_ARGUMENTS_START])) {
+    return scan_annotation_boundary(lexer, valid_symbols);
+  }
+
   if (valid_symbols[ANNOTATION_OPEN_PAREN] && lexer->lookahead == '(') {
     advance(lexer);
     lexer->mark_end(lexer);
@@ -64,6 +69,15 @@ bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
     return scan_multiline_comments(lexer);
   }
   return false;
+}
+
+static bool scan_interpolation_start(TSLexer *lexer) {
+  advance(lexer);
+  lexer->mark_end(lexer);
+  int32_t next = lexer->lookahead;
+  if (next != '{' && next != '_' && !(next >= 'a' && next <= 'z') && !(next >= 'A' && next <= 'Z')) return false;
+  lexer->result_symbol = INTERPOLATION_START;
+  return true;
 }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
@@ -103,6 +117,23 @@ static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
         advance(lexer);
     }
   }
+}
+
+static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols) {
+  lexer->mark_end(lexer);
+  if (lexer->lookahead == '(' && valid_symbols[ANNOTATION_ARGUMENTS_START]) {
+    lexer->result_symbol = ANNOTATION_ARGUMENTS_START;
+    return true;
+  }
+  if (skip_trivia(lexer) && (lexer->lookahead == '.' || lexer->lookahead == '<')) {
+    enum TokenType continuation = lexer->lookahead == '.' ? ANNOTATION_DOT : ANNOTATION_TYPE_ARGUMENTS;
+    if (!valid_symbols[continuation]) return false;
+    lexer->result_symbol = continuation;
+    return true;
+  }
+  if (!valid_symbols[ANNOTATION_END]) return false;
+  lexer->result_symbol = ANNOTATION_END;
+  return true;
 }
 
 static bool scan_multiline_comments(TSLexer *lexer) {

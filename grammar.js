@@ -93,6 +93,10 @@ module.exports = grammar({
     $.annotation_open_paren,
     $._interpolation_start,
     $._instantiation_close,
+    $._annotation_end,
+    $._annotation_dot,
+    $._annotation_type_arguments,
+    $._annotation_arguments_start,
     $.__error_recovery,
   ],
 
@@ -396,8 +400,9 @@ module.exports = grammar({
     _annotation_with_args: ($) =>
       seq(
         "@",
-        field("name", choice($.identifier, $.qualified)),
-        optional(seq($.type_arguments, optional(seq(".", $._identifier_or_new)))),
+        field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))),
+        optional(seq($._annotation_type_arguments, $.type_arguments, optional(seq($._annotation_dot, ".", $._identifier_or_new)))),
+        $._annotation_arguments_start,
         $.annotation_arguments,
       ),
 
@@ -405,7 +410,13 @@ module.exports = grammar({
       seq($.annotation_open_paren, optional($._argument_list), ")"),
 
     _annotation_no_args: ($) =>
-      seq("@", field("name", choice($.identifier, $.qualified))),
+      seq("@", field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))), $._annotation_end),
+
+    _annotation_qualified: ($) =>
+      choice(
+        seq($._type_name, $._annotation_dot, ".", $._identifier_or_new),
+        seq($._type_name, $._annotation_dot, ".", $._type_name, $._annotation_dot, ".", $._identifier_or_new),
+      ),
 
     qualified: ($) =>
       choice(
