@@ -93,7 +93,10 @@ module.exports = grammar({
     $.annotation_open_paren,
     $._interpolation_start,
     $._instantiation_close,
-    $._comment_separated_open_paren,
+    $._annotation_end,
+    $._annotation_dot,
+    $._annotation_type_arguments,
+    $._annotation_arguments_start,
     $.__error_recovery,
   ],
 
@@ -397,8 +400,9 @@ module.exports = grammar({
     _annotation_with_args: ($) =>
       seq(
         "@",
-        field("name", choice($.identifier, $.qualified)),
-        optional(seq($.type_arguments, optional(seq(".", $._identifier_or_new)))),
+        field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))),
+        optional(seq($._annotation_type_arguments, $.type_arguments, optional(seq($._annotation_dot, ".", $._identifier_or_new)))),
+        $._annotation_arguments_start,
         $.annotation_arguments,
       ),
 
@@ -406,7 +410,13 @@ module.exports = grammar({
       seq($.annotation_open_paren, optional($._argument_list), ")"),
 
     _annotation_no_args: ($) =>
-      seq("@", field("name", choice($.identifier, $.qualified))),
+      seq("@", field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))), $._annotation_end),
+
+    _annotation_qualified: ($) =>
+      choice(
+        seq($._type_name, $._annotation_dot, ".", $._identifier_or_new),
+        seq($._type_name, $._annotation_dot, ".", $._type_name, $._annotation_dot, ".", $._identifier_or_new),
+      ),
 
     qualified: ($) =>
       choice(
@@ -544,9 +554,9 @@ module.exports = grammar({
 
     record_type: ($) =>
       choice(
-        seq(recordOpenParen($), ")"),
+        seq("(", ")"),
         seq(
-          recordOpenParen($),
+          "(",
           commaSep1($.record_type_field),
           ",",
           "{",
@@ -554,9 +564,9 @@ module.exports = grammar({
           "}",
           ")",
         ),
-        seq(recordOpenParen($), commaSep1TrailingComma($.record_type_field), ")"),
+        seq("(", commaSep1TrailingComma($.record_type_field), ")"),
         seq(
-          recordOpenParen($),
+          "(",
           "{",
           commaSep1TrailingComma($.record_type_named_field),
           "}",
@@ -2466,8 +2476,4 @@ function assignmentExpression($, expression) {
       field("right", expression),
     ),
   );
-}
-
-function recordOpenParen($) {
-  return choice("(", alias($._comment_separated_open_paren, "("));
 }

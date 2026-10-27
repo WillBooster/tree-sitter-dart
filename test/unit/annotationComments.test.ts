@@ -19,6 +19,7 @@ const recordCases = [
 const original = recordCases.at(-1)!;
 const edits = [
   { start: 0, end: 0, text: '  ' },
+  ...[8, 11, 12, 15, 16, 19, 20, 22, 23, 24, 25, 26, 27].map((index) => ({ start: index, end: index, text: ' ' })),
   ...['/*x*/ ', ' ', '/**doc*/', '/*outer/*inner*/end*/', '/*a\0b*/', '/*x*/\n', '/*x*/\r\n', '', '/*unclosed'].map(
     (text) => ({ start: 2, end: 7, text })
   ),
@@ -44,6 +45,33 @@ test.each(recordCases)('retains an annotated record return in %j', (source) => {
     expectRecordReturn(tree);
     const expectedArguments = source.includes('(1)') ? 1 : 0;
     expect(tree.rootNode.descendantsOfType('annotation_arguments')).toHaveLength(expectedArguments);
+  } finally {
+    tree.delete();
+  }
+});
+
+test.each([
+  "@p.Deprecated('x') class C{}",
+  "@p /*x*/ . Deprecated('x') class C{}",
+  '@A<int>(1) class C{}',
+  '@A <int>(1) class C{}',
+  '@A/*x*/<int>(1) class C{}',
+  '@A(1)/*x*/(int,int) f()=>(1,2);',
+  "@p.Deprecated('x') (int,int) f()=>(1,2);",
+])('preserves qualified and generic annotation arguments in %j', (source) => {
+  const tree = parser!.parse(source)!;
+  try {
+    expect(tree.rootNode.hasError, tree.rootNode.toString()).toBe(false);
+    expect(tree.rootNode.descendantsOfType('annotation_arguments')).toHaveLength(1);
+  } finally {
+    tree.delete();
+  }
+});
+
+test('rejects comment-separated annotation arguments on a class', () => {
+  const tree = parser!.parse('@A/*x*/(1) class C{}')!;
+  try {
+    expect(tree.rootNode.hasError, tree.rootNode.toString()).toBe(true);
   } finally {
     tree.delete();
   }

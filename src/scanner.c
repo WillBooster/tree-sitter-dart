@@ -1,8 +1,5 @@
 #include "tree_sitter/parser.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 enum TokenType {
   TEMPLATE_CHARS_SINGLE,
   TEMPLATE_CHARS_DOUBLE,
@@ -14,42 +11,24 @@ enum TokenType {
   ANNOTATION_OPEN_PAREN,
   INTERPOLATION_START,
   INSTANTIATION_CLOSE,
-  COMMENT_SEPARATED_OPEN_PAREN,
+  ANNOTATION_END,
+  ANNOTATION_DOT,
+  ANNOTATION_TYPE_ARGUMENTS,
+  ANNOTATION_ARGUMENTS_START,
   // Never emitted: recovery enables every external token, preserving the template-scanner path.
   ERROR_RECOVERY,
 };
 
-typedef struct {
-  bool veto_annotation_paren;
-  uint32_t veto_column;
-} Scanner;
+void *tree_sitter_dart_external_scanner_create() { return NULL; }
+void tree_sitter_dart_external_scanner_destroy(void *p) { (void)p; }
+void tree_sitter_dart_external_scanner_reset(void *p) { (void)p; }
+unsigned tree_sitter_dart_external_scanner_serialize(void *p, char *buffer) { (void)p; (void)buffer; return 0; }
+void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsigned n) { (void)p; (void)b; (void)n; }
 
-static void clear_annotation_paren_veto(Scanner *scanner);
-
-void *tree_sitter_dart_external_scanner_create() { return calloc(1, sizeof(Scanner)); }
-void tree_sitter_dart_external_scanner_destroy(void *p) { free(p); }
-void tree_sitter_dart_external_scanner_reset(void *p) { clear_annotation_paren_veto(p); }
-unsigned tree_sitter_dart_external_scanner_serialize(void *p, char *buffer) {
-  Scanner *scanner = p;
-  if (!scanner->veto_annotation_paren) return 0;
-  buffer[0] = 1;
-  memcpy(&buffer[1], &scanner->veto_column, sizeof(uint32_t));
-  return 1 + sizeof(uint32_t);
-}
-void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsigned n) {
-  Scanner *scanner = p;
-  clear_annotation_paren_veto(scanner);
-  if (n >= 1 + sizeof(uint32_t)) {
-    scanner->veto_annotation_paren = b[0] != 0;
-    memcpy(&scanner->veto_column, &b[1], sizeof(uint32_t));
-  }
-}
-
-static bool scan_interpolation_start(Scanner *scanner, TSLexer *lexer);
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
-static void set_template_symbol(TSLexer *lexer, const bool *valid_symbols);
-static bool scan_annotation_open_paren(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols);
-static bool scan_multiline_comments(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols);
+static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
+static bool scan_interpolation_start(TSLexer *lexer);
+static bool scan_multiline_comments(TSLexer *lexer);
 static bool is_whitespace(int32_t c);
 static void advance(TSLexer *lexer);
 static bool scan_instantiation_close(TSLexer *lexer);
@@ -59,45 +38,59 @@ static bool scan_block_comment_body(TSLexer *lexer);
 
 bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
-  Scanner *scanner = payload;
+  (void)payload;
   if (valid_symbols[INTERPOLATION_START] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '$') {
-    return scan_interpolation_start(scanner, lexer);
+    return scan_interpolation_start(lexer);
   }
   if (valid_symbols[TEMPLATE_CHARS_DOUBLE] || valid_symbols[TEMPLATE_CHARS_SINGLE] ||
       valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) {
-    bool scanned = scan_templates(lexer, valid_symbols);
-    if (scanned) clear_annotation_paren_veto(scanner);
-    return scanned;
+    return scan_templates(lexer, valid_symbols);
   }
 
-  if (lexer->lookahead == '(' && scan_annotation_open_paren(scanner, lexer, valid_symbols)) return true;
+  if (!valid_symbols[ERROR_RECOVERY] && (valid_symbols[ANNOTATION_END] ||
+      valid_symbols[ANNOTATION_DOT] || valid_symbols[ANNOTATION_TYPE_ARGUMENTS] || valid_symbols[ANNOTATION_ARGUMENTS_START])) {
+    return scan_annotation_boundary(lexer, valid_symbols);
+  }
+
+  if (valid_symbols[ANNOTATION_OPEN_PAREN] && lexer->lookahead == '(') {
+    advance(lexer);
+    lexer->mark_end(lexer);
+    lexer->result_symbol = ANNOTATION_OPEN_PAREN;
+    return true;
+  }
 
   while (is_whitespace(lexer->lookahead)) lexer->advance(lexer, true);
 
   if (valid_symbols[INSTANTIATION_CLOSE] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '>') {
-    bool scanned = scan_instantiation_close(lexer);
-    if (scanned) clear_annotation_paren_veto(scanner);
-    return scanned;
+    return scan_instantiation_close(lexer);
   }
 
   if (lexer->lookahead == '/') {
-    return scan_multiline_comments(scanner, lexer, valid_symbols);
+    return scan_multiline_comments(lexer);
   }
   return false;
 }
 
-static bool scan_interpolation_start(Scanner *scanner, TSLexer *lexer) {
+static bool scan_interpolation_start(TSLexer *lexer) {
   advance(lexer);
   lexer->mark_end(lexer);
   int32_t next = lexer->lookahead;
   if (next != '{' && next != '_' && !(next >= 'a' && next <= 'z') && !(next >= 'A' && next <= 'Z')) return false;
-  clear_annotation_paren_veto(scanner);
   lexer->result_symbol = INTERPOLATION_START;
   return true;
 }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
-  set_template_symbol(lexer, valid_symbols);
+  const enum TokenType templates[] = {
+    TEMPLATE_CHARS_DOUBLE, TEMPLATE_CHARS_SINGLE,
+    TEMPLATE_CHARS_SINGLE_SINGLE, TEMPLATE_CHARS_DOUBLE_SINGLE,
+  };
+  for (unsigned i = 0; i < sizeof(templates) / sizeof(templates[0]); i++) {
+    if (valid_symbols[templates[i]]) {
+      lexer->result_symbol = templates[i];
+      break;
+    }
+  }
   for (bool has_content = false;; has_content = true) {
     lexer->mark_end(lexer);
     switch (lexer->lookahead) {
@@ -126,45 +119,30 @@ static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
   }
 }
 
-static void set_template_symbol(TSLexer *lexer, const bool *valid_symbols) {
-  const enum TokenType templates[] = {
-    TEMPLATE_CHARS_DOUBLE, TEMPLATE_CHARS_SINGLE,
-    TEMPLATE_CHARS_SINGLE_SINGLE, TEMPLATE_CHARS_DOUBLE_SINGLE,
-  };
-  for (unsigned i = 0; i < sizeof(templates) / sizeof(templates[0]); i++) {
-    if (valid_symbols[templates[i]]) {
-      lexer->result_symbol = templates[i];
-      break;
-    }
-  }
-}
-
-static bool scan_annotation_open_paren(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
-  bool separated = scanner->veto_annotation_paren && lexer->get_column(lexer) == scanner->veto_column;
-  if (separated) {
-    if (!valid_symbols[COMMENT_SEPARATED_OPEN_PAREN] || valid_symbols[ERROR_RECOVERY]) return false;
-    lexer->result_symbol = COMMENT_SEPARATED_OPEN_PAREN;
-  } else {
-    if (!valid_symbols[ANNOTATION_OPEN_PAREN]) return false;
-    lexer->result_symbol = ANNOTATION_OPEN_PAREN;
-  }
-  clear_annotation_paren_veto(scanner);
-  advance(lexer);
+static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols) {
   lexer->mark_end(lexer);
+  if (lexer->lookahead == '(' && valid_symbols[ANNOTATION_ARGUMENTS_START]) {
+    lexer->result_symbol = ANNOTATION_ARGUMENTS_START;
+    return true;
+  }
+  if (skip_trivia(lexer) && (lexer->lookahead == '.' || lexer->lookahead == '<')) {
+    enum TokenType continuation = lexer->lookahead == '.' ? ANNOTATION_DOT : ANNOTATION_TYPE_ARGUMENTS;
+    if (!valid_symbols[continuation]) return false;
+    lexer->result_symbol = continuation;
+    return true;
+  }
+  if (!valid_symbols[ANNOTATION_END]) return false;
+  lexer->result_symbol = ANNOTATION_END;
   return true;
 }
 
-static bool scan_multiline_comments(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+static bool scan_multiline_comments(TSLexer *lexer) {
   advance(lexer);
   if (lexer->lookahead != '*') return false;
   advance(lexer);
   lexer->result_symbol = lexer->lookahead == '*' ? DOCUMENTATION_BLOCK_COMMENT : BLOCK_COMMENT;
 
-  if (!scan_block_comment_body(lexer)) return false;
-  scanner->veto_annotation_paren = !valid_symbols[ERROR_RECOVERY] &&
-    valid_symbols[ANNOTATION_OPEN_PAREN] && lexer->lookahead == '(';
-  scanner->veto_column = scanner->veto_annotation_paren ? lexer->get_column(lexer) : 0;
-  return true;
+  return scan_block_comment_body(lexer);
 }
 
 static bool scan_instantiation_close(TSLexer *lexer) {
@@ -238,9 +216,3 @@ static bool is_whitespace(int32_t c) {
 }
 
 static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
-
-static void clear_annotation_paren_veto(Scanner *scanner) {
-  scanner->veto_annotation_paren = false;
-  scanner->veto_column = 0;
-}
-
