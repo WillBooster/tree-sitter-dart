@@ -87,35 +87,35 @@ void afterHeaders() {}
           (type_identifier))))
     superclass: (superclass
       type: (type
-        (type_identifier))
-      type: (type
-        (type
-          (type_identifier)))
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))
       (mixins
         (type
           (type_identifier))))
     interfaces: (interfaces
       (type
-        (type_identifier))
-      (type
-        (type
-          (type_identifier)))))
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))))
   (mixin_declaration
     name: (identifier)
     type_parameters: (type_parameters
       (type_parameter
         name: (type_identifier)))
     (type
-      (type_identifier))
-    (type
-      (type
-        (type_identifier)))
+      (type_identifier)
+      (type_arguments
+        (type
+          (type_identifier))))
     interfaces: (interfaces
       (type
-        (type_identifier))
-      (type
-        (type
-          (type_identifier)))))
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))))
   (extension_declaration
     name: (identifier)
     type_parameters: (type_parameters
@@ -144,10 +144,10 @@ void afterHeaders() {}
     name: (identifier)
     (interfaces
       (type
-        (type_identifier))
-      (type
-        (type
-          (type_identifier)))))
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))))
   (function_declaration
     signature: (function_signature
       return_type: (type
