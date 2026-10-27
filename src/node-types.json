@@ -3781,6 +3781,10 @@
           "named": true
         },
         {
+          "type": "arguments",
+          "named": true
+        },
+        {
           "type": "assignment_expression",
           "named": true
         },

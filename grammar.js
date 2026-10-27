@@ -1331,7 +1331,7 @@ module.exports = grammar({
         choice(
           seq(".", $.identifier),
           seq(".", "new"),
-          seq("const", ".", choice($.identifier, "new"), $.arguments),
+          constantShorthand($),
         ),
       ),
 
@@ -2324,6 +2324,7 @@ module.exports = grammar({
         seq("const", "(", $._expression, ")"),
         seq("const", $._record_literal_no_const),
         seq(".", $.identifier),
+        constantShorthand($),
       ),
 
     variable_pattern: ($) => seq($._final_var_or_type, field("name", $.identifier)),
@@ -2424,6 +2425,10 @@ module.exports = grammar({
       ),
   },
 });
+
+function constantShorthand($) {
+  return seq("const", ".", choice($.identifier, "new"), $.arguments);
+}
 
 function generativeConstructorHead($) {
   return choice(
