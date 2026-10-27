@@ -14035,8 +14035,12 @@
           "name": "_name"
         },
         {
-          "type": "SYMBOL",
-          "name": "_built_in_identifier"
+          "type": "PREC_DYNAMIC",
+          "value": -1,
+          "content": {
+            "type": "SYMBOL",
+            "name": "_built_in_identifier"
+          }
         }
       ]
     },
