@@ -71,9 +71,134 @@ const cases = [
     'E.named(int this.value)',
     'named',
   ],
+  ['explicit const new', 'class C { const C.new(); }', 'constant_constructor_signature', 'const C.new()', 'C'],
+  [
+    'explicit factory new',
+    'class C { factory C.new() => D(); }',
+    'factory_constructor_signature',
+    'factory C.new()',
+    'C',
+  ],
+  [
+    'explicit redirecting new',
+    'class C { factory C.new() = D; }',
+    'redirecting_factory_constructor_signature',
+    'factory C.new() = D',
+    'C',
+  ],
 ] as const;
 
 test.each(cases)('%s has one constructor tag with its semantic name', (_title, source, kind, declaration, name) => {
+  checkConstructorTag(source, kind, declaration, name);
+});
+
+const trivia = [
+  ['block', ' /* comment */ '],
+  ['line', ' // comment\n'],
+  ['documentation block', ' /** documentation */ '],
+  ['documentation line', ' /// documentation\n'],
+  ['multiple', ' /* first */ // second\n /** third */ /// fourth\n'],
+] as const;
+
+for (const [label, comment] of trivia) {
+  test.each(cases)(`%s retains one tag with ${label} comments`, (_title, source, kind, declaration, name) => {
+    const commented = declaration.replace('(', `${comment}(`);
+    checkConstructorTag(source.replace(declaration, commented), kind, commented, name);
+  });
+}
+
+test('comments inside a qualified constructor name do not capture the class prefix', () => {
+  checkConstructorTag(
+    'class C { C /* owner */ . /* qualifier */ named /* parameters */ (); }',
+    'constructor_signature',
+    'C /* owner */ . /* qualifier */ named /* parameters */ ()',
+    'named'
+  );
+});
+
+test('comments around explicit new retain the unnamed constructor identity', () => {
+  checkConstructorTag(
+    'class C { C /* owner */ . /* qualifier */ new /* parameters */ (); }',
+    'constructor_signature',
+    'C /* owner */ . /* qualifier */ new /* parameters */ ()',
+    'C'
+  );
+});
+
+const explicitNewTriviaCases = [
+  [
+    'const',
+    'class C { const C /* owner */ . /* qualifier */ new /* parameters */ (); }',
+    'constant_constructor_signature',
+    'const C /* owner */ . /* qualifier */ new /* parameters */ ()',
+  ],
+  [
+    'factory',
+    'class C { factory C /* owner */ . /* qualifier */ new /* parameters */ () => D(); }',
+    'factory_constructor_signature',
+    'factory C /* owner */ . /* qualifier */ new /* parameters */ ()',
+  ],
+  [
+    'redirecting factory',
+    'class C { factory C /* owner */ . /* qualifier */ new /* parameters */ () = D; }',
+    'redirecting_factory_constructor_signature',
+    'factory C /* owner */ . /* qualifier */ new /* parameters */ () = D',
+  ],
+] as const;
+
+test.each(explicitNewTriviaCases)(
+  '%s explicit new retains comments in the qualified name',
+  (_title, source, kind, definition) => {
+    checkConstructorTag(source, kind, definition, 'C');
+  }
+);
+
+test('constructor-name edits preserve raw capture pairing and the following declaration', () => {
+  const source = 'class C { C(); }\nvoid following() {}';
+  checkInsertion(source, source.indexOf('C()') + 1, '.named');
+});
+
+test('comment insertion preserves raw capture pairing and the following declaration', () => {
+  const source = 'class C { C.named(); }\nvoid following() {}';
+  checkInsertion(source, source.indexOf('named') + 'named'.length, ' /* comment */ ');
+});
+
+function checkInsertion(original: string, startIndex: number, inserted: string): void {
+  const old = parser.parse(original)!;
+  const updated = original.slice(0, startIndex) + inserted + original.slice(startIndex);
+  old.edit(
+    new Edit({
+      startIndex,
+      oldEndIndex: startIndex,
+      newEndIndex: startIndex + inserted.length,
+      startPosition: { row: 0, column: startIndex },
+      oldEndPosition: { row: 0, column: startIndex },
+      newEndPosition: { row: 0, column: startIndex + inserted.length },
+    })
+  );
+  const incremental = parser.parse(updated, old)!;
+  const fresh = parser.parse(updated)!;
+  expect(incremental.rootNode.hasError).toBe(false);
+  expect(incremental.rootNode.toString()).toBe(fresh.rootNode.toString());
+  const matches = query.matches(incremental.rootNode);
+  const methods = matches.filter((match) => match.captures.some((capture) => capture.name === 'definition.method'));
+  expect(methods).toHaveLength(1);
+  expect(methods[0]!.captures.find((capture) => capture.name === 'name')!.node.text).toBe('named');
+  expect(matches.map((match) => match.captures.map(captureRecord))).toEqual(
+    query.matches(fresh.rootNode).map((match) => match.captures.map(captureRecord))
+  );
+  expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
+    query.captures(fresh.rootNode).map(captureRecord)
+  );
+  expect(incremental.rootNode.namedChildren[1]!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
+    'following'
+  );
+  fresh.delete();
+  incremental.delete();
+  old.delete();
+}
+
+function checkConstructorTag(source: string, kind: string, declaration: string, name: string): void {
   const tree = parser.parse(source)!;
   expect(tree.rootNode.hasError).toBe(false);
   const matches = query
@@ -94,41 +219,7 @@ test.each(cases)('%s has one constructor tag with its semantic name', (_title, s
   expect(captures.map(captureRecord)).toEqual(match.captures.map(captureRecord));
   expect(captures.map((capture) => capture.name)).toEqual(['definition.method', 'name']);
   tree.delete();
-});
-
-test('constructor-name edits preserve raw capture pairing and the following declaration', () => {
-  const original = 'class C { C(); }\nvoid following() {}';
-  const old = parser.parse(original)!;
-  const startIndex = original.indexOf('C()') + 1;
-  const inserted = '.named';
-  const updated = original.slice(0, startIndex) + inserted + original.slice(startIndex);
-  old.edit(
-    new Edit({
-      startIndex,
-      oldEndIndex: startIndex,
-      newEndIndex: startIndex + inserted.length,
-      startPosition: { row: 0, column: startIndex },
-      oldEndPosition: { row: 0, column: startIndex },
-      newEndPosition: { row: 0, column: startIndex + inserted.length },
-    })
-  );
-  const incremental = parser.parse(updated, old)!;
-  const fresh = parser.parse(updated)!;
-  expect(incremental.rootNode.hasError).toBe(false);
-  expect(incremental.rootNode.toString()).toBe(fresh.rootNode.toString());
-  expect(query.matches(incremental.rootNode).map((match) => match.captures.map(captureRecord))).toEqual(
-    query.matches(fresh.rootNode).map((match) => match.captures.map(captureRecord))
-  );
-  expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
-    query.captures(fresh.rootNode).map(captureRecord)
-  );
-  expect(incremental.rootNode.namedChildren[1]!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
-    'following'
-  );
-  fresh.delete();
-  incremental.delete();
-  old.delete();
-});
+}
 
 function captureRecord(capture: QueryCapture): [number, string, string, string, number, number] {
   return [

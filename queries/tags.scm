@@ -85,21 +85,25 @@
 ; Constructors
 (constructor_signature
   name: (identifier) @name
+  . [(comment) "." "new"]*
   . parameters: (formal_parameter_list)) @definition.method
 
 ; Const constructors
 (constant_constructor_signature
   name: (identifier) @name
+  . [(comment) "." "new"]*
   . parameters: (formal_parameter_list)) @definition.method
 
 ; Factory constructors
 (factory_constructor_signature
   name: (identifier) @name
+  . [(comment) "." "new"]*
   . parameters: (formal_parameter_list)) @definition.method
 
 ; Redirecting factory constructors
 (redirecting_factory_constructor_signature
   name: (identifier) @name
+  . [(comment) "." "new"]*
   . parameters: (formal_parameter_list)) @definition.method
 
 ((primary_constructor
