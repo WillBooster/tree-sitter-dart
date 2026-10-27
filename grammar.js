@@ -92,6 +92,11 @@ module.exports = grammar({
     $.documentation_block_comment,
     $.annotation_open_paren,
     $._interpolation_start,
+    $._instantiation_close,
+    $._annotation_end,
+    $._annotation_dot,
+    $._annotation_type_arguments,
+    $._annotation_arguments_start,
     $.__error_recovery,
   ],
 
@@ -399,8 +404,9 @@ module.exports = grammar({
     _annotation_with_args: ($) =>
       seq(
         "@",
-        field("name", choice($.identifier, $.qualified)),
-        optional(seq($.type_arguments, optional(seq(".", $._identifier_or_new)))),
+        field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))),
+        optional(seq($._annotation_type_arguments, $.type_arguments, optional(seq($._annotation_dot, ".", $._identifier_or_new)))),
+        $._annotation_arguments_start,
         $.annotation_arguments,
       ),
 
@@ -408,7 +414,13 @@ module.exports = grammar({
       seq($.annotation_open_paren, optional($._argument_list), ")"),
 
     _annotation_no_args: ($) =>
-      seq("@", field("name", choice($.identifier, $.qualified))),
+      seq("@", field("name", choice($.identifier, alias($._annotation_qualified, $.qualified))), $._annotation_end),
+
+    _annotation_qualified: ($) =>
+      choice(
+        seq($._type_name, $._annotation_dot, ".", $._identifier_or_new),
+        seq($._type_name, $._annotation_dot, ".", $._type_name, $._annotation_dot, ".", $._identifier_or_new),
+      ),
 
     qualified: ($) =>
       choice(
@@ -906,10 +918,16 @@ module.exports = grammar({
 
     _expression_without_cascade: ($) =>
       choice(
-        $.assignment_expression,
+        alias($._assignment_expression_without_cascade, $.assignment_expression),
         $._real_expression,
-        $.throw_expression,
+        alias($._throw_expression_without_cascade, $.throw_expression),
       ),
+
+    _assignment_expression_without_cascade: ($) =>
+      assignmentExpression($, $._expression_without_cascade),
+
+    _throw_expression_without_cascade: ($) =>
+      seq("throw", field("value", $._expression_without_cascade)),
 
     _real_expression: ($) =>
       choice(
@@ -937,14 +955,7 @@ module.exports = grammar({
     // --- Assignment ---
 
     assignment_expression: ($) =>
-      prec.right(
-        PREC.ASSIGNMENT,
-        seq(
-          field("left", $.assignable_expression),
-          field("operator", $._assignment_operator),
-          field("right", $._expression),
-        ),
-      ),
+      assignmentExpression($, $._expression),
 
     _assignment_operator: (_) =>
       choice(
@@ -1175,9 +1186,12 @@ module.exports = grammar({
       prec("instantiation",
         seq(
           field("function", $._postfix_expression),
-          field("type_arguments", $.type_arguments),
+          field("type_arguments", alias($._instantiation_type_arguments, $.type_arguments)),
         ),
       ),
+
+    _instantiation_type_arguments: ($) =>
+      seq("<", commaSep1($.type), alias($._instantiation_close, ">")),
 
     ...postfixChainWrappers("_postfix_expression", ""),
 
@@ -2442,8 +2456,8 @@ module.exports = grammar({
         $.block_comment,
         $.documentation_block_comment,
         // Single-line comments
-        seq("//", /([^/\n].*)?/),
-        seq("///", /.*/),
+        seq("//", /([^/\r\n][^\r\n]*)?/),
+        seq("///", /[^\r\n]*/),
       ),
   },
 });
@@ -2546,4 +2560,14 @@ function objectPattern($, patternField) {
 
 function castPattern($, primary) {
   return seq(primary, "as", field("type", $.type));
+}
+function assignmentExpression($, expression) {
+  return prec.right(
+    PREC.ASSIGNMENT,
+    seq(
+      field("left", $.assignable_expression),
+      field("operator", $._assignment_operator),
+      field("right", expression),
+    ),
+  );
 }
