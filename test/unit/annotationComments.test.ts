@@ -77,6 +77,18 @@ test('rejects comment-separated annotation arguments on a class', () => {
   }
 });
 
+test('retains a later annotation while recovering from malformed metadata', () => {
+  const tree = parser!.parse('enum E {\n  @A/*x*/(1),\n}\n\n@MyAnnota(1)\nint x = 0;')!;
+  try {
+    const annotation = tree.rootNode
+      .descendantsOfType('annotation')
+      .find((node) => node.childForFieldName('name')?.text === 'MyAnnota')!;
+    expect(annotation.descendantsOfType('annotation_arguments').map((node) => node.text)).toEqual(['(1)']);
+  } finally {
+    tree.delete();
+  }
+});
+
 test.each(edits)('reparses and restores annotation separation after $text', ({ start, end, text }) => {
   const changed = original.slice(0, start) + text + original.slice(end);
   let tree = parser!.parse(original)!;
