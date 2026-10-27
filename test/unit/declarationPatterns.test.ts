@@ -93,6 +93,18 @@ const validCases = [
 
 const invalidCases = [
   {
+    name: 'nested var',
+    source: 'void main(){var(var a,b)=(1,2);print(a+b);}',
+  },
+  {
+    name: 'nested final',
+    source: 'void main(){var(final a,b)=(1,2);print(a+b);}',
+  },
+  {
+    name: 'nested modifier in loop',
+    source: 'void main(){for(var(final a,b)in[(1,2)]){print(a+b);}}',
+  },
+  {
     name: 'constant invalid',
     source: 'void main(){var(1,b)=(1,2);print(b);}',
   },

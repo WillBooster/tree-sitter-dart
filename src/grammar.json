@@ -14032,8 +14032,13 @@
           "value": "variable_pattern"
         },
         {
-          "type": "SYMBOL",
-          "name": "variable_pattern"
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_declaration_typed_name"
+          },
+          "named": true,
+          "value": "variable_pattern"
         },
         {
           "type": "SYMBOL",
@@ -14048,6 +14053,23 @@
         "type": "SYMBOL",
         "name": "identifier"
       }
+    },
+    "_declaration_typed_name": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "type"
+        },
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        }
+      ]
     },
     "_declaration_cast_pattern": {
       "type": "SEQ",
@@ -15110,6 +15132,10 @@
     [
       "record_type",
       "_declaration_record_pattern"
+    ],
+    [
+      "record_type_field",
+      "_declaration_typed_name"
     ],
     [
       "set_or_map_literal",

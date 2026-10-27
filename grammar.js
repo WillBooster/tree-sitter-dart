@@ -192,6 +192,7 @@ module.exports = grammar({
     [$._declaration_parenthesized_pattern, $._declaration_pattern_field],
     [$._type_name, $._declared_name],
     [$.record_type, $._declaration_record_pattern],
+    [$.record_type_field, $._declaration_typed_name],
     [$.set_or_map_literal, $.constant_pattern],
     [$.list_literal, $.constant_pattern],
     [$.record_literal, $.constant_pattern],
@@ -2351,11 +2352,14 @@ module.exports = grammar({
     _declaration_primary_pattern: ($) =>
       choice(
         alias($._declared_name, $.variable_pattern),
-        $.variable_pattern,
+        alias($._declaration_typed_name, $.variable_pattern),
         $._declaration_outer_pattern,
       ),
 
     _declared_name: ($) => field("name", $.identifier),
+
+    _declaration_typed_name: ($) =>
+      seq($.type, field("name", $.identifier)),
 
     _declaration_cast_pattern: ($) =>
       castPattern($, $._declaration_primary_pattern),
