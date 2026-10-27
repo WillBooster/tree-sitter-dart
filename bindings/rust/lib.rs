@@ -156,6 +156,30 @@ mod tests {
         }
     }
 
+    #[test]
+    fn non_reserved_variance_words_can_name_type_parameters() {
+        for name in ["out", "inout"] {
+            for declaration in [
+                format!("class C<{name}> {{}}"),
+                format!("mixin M<{name}> {{}}"),
+                format!("class C<{name} extends Object> {{}}"),
+                format!("void f<{name}>() {{}}"),
+            ] {
+                let tree = parse_valid(&declaration);
+                let root = tree.root_node();
+                let start = declaration.find('<').unwrap() + 1;
+                let identifier = root
+                    .named_descendant_for_byte_range(start, start + name.len())
+                    .unwrap();
+                assert_eq!(identifier.kind(), "type_identifier");
+                let parameter = identifier.parent().unwrap();
+                assert_eq!(parameter.kind(), "type_parameter");
+                assert_eq!(parameter.child_by_field_name("name"), Some(identifier));
+                assert!(parameter.child_by_field_name("variance").is_none());
+            }
+        }
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

@@ -550,7 +550,11 @@ module.exports = grammar({
       seq(
         optional($._metadata),
         optional(field("variance", $.variance_modifier)),
-        field("name", alias($.identifier, $.type_identifier)),
+        field("name", choice(
+          alias($.identifier, $.type_identifier),
+          alias("out", $.type_identifier),
+          alias("inout", $.type_identifier),
+        )),
         optional(seq("extends", field("bound", $._type_not_void))),
       ),
 
