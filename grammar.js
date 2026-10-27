@@ -2319,11 +2319,10 @@ module.exports = grammar({
         seq($.identifier, optional(seq(".", $.identifier))),
         $.qualified,
         $.const_object_expression,
-        seq("const", optional($.type_arguments), "[", commaSep1TrailingComma($._element), "]"),
-        seq("const", optional($.type_arguments), "{", commaSep1TrailingComma($._element), "}"),
+        seq("const", optional($.type_arguments), "[", commaSepTrailingComma($._element), "]"),
+        seq("const", optional($.type_arguments), "{", commaSepTrailingComma($._element), "}"),
         seq("const", "(", $._expression, ")"),
         seq("const", $._record_literal_no_const),
-        // Dot shorthand (Dart 3.6+): .enumValue in patterns
         seq(".", $.identifier),
       ),
 
