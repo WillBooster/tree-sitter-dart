@@ -97,6 +97,16 @@ module.exports = grammar({
 
   word: ($) => $._name,
 
+  reserved: {
+    global: ($) => [
+      "assert", "break", "case", "catch", "class", "const", "continue",
+      "default", "do", "else", "enum", "extends", "false", "final",
+      "finally", "for", "if", "in", "is", "new", "null", "rethrow",
+      "return", "super", "switch", "this", "throw", "true", "try",
+      "var", "void", "while", "with",
+    ],
+  },
+
   supertypes: ($) => [$._statement, $._literal, $._declaration, $._instantiation],
 
   precedences: ($) => [

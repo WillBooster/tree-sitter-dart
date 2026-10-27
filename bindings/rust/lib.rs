@@ -299,6 +299,29 @@ mod tests {
         }
     }
 
+    #[test]
+    fn reserved_words_cannot_name_variables_parameters_or_types() {
+        for source in [
+            "var class = 1;",
+            "void f(int throw) {}",
+            "List<false> values = [];",
+        ] {
+            let tree = parse(source);
+            assert!(
+                tree.root_node().has_error(),
+                "{source}: {}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
+
+    #[test]
+    fn keyword_prefixes_remain_valid_identifiers() {
+        parse_valid(
+            "class Classic {} var classified = 1; void f(int returnValue) { if (returnValue > 0) { return; } }",
+        );
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(
