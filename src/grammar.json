@@ -3129,6 +3129,15 @@
                 ]
               },
               {
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "void_type"
+                },
+                "named": true,
+                "value": "identifier"
+              },
+              {
                 "type": "STRING",
                 "value": "~"
               },
@@ -13325,8 +13334,22 @@
               "value": "."
             },
             {
-              "type": "SYMBOL",
-              "name": "identifier"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "STRING",
+                    "value": "new"
+                  },
+                  "named": true,
+                  "value": "identifier"
+                }
+              ]
             }
           ]
         },

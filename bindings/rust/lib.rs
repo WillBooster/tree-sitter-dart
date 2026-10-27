@@ -334,6 +334,21 @@ mod tests {
         assert_eq!(node.kind(), "identifier_dollar_escaped");
     }
 
+    #[test]
+    fn void_symbol_keeps_its_identifier_leaf() {
+        let source = "var symbol = #void;";
+        let tree = parse_valid(source);
+        let start = source.find("void").unwrap();
+        let node = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 4)
+            .unwrap();
+        assert_eq!(node.kind(), "identifier");
+        assert_eq!(node.named_child_count(), 0);
+        assert_eq!(node.parent().unwrap().kind(), "symbol_literal");
+        assert!(parse("var symbol = #prefix.void;").root_node().has_error());
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

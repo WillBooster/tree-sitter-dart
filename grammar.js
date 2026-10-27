@@ -792,6 +792,7 @@ module.exports = grammar({
           "#",
           choice(
             seq($.identifier, repeat(seq(".", $.identifier))),
+            alias($.void_type, $.identifier),
             "~",
             $.binary_operator,
             "[]",
@@ -2293,7 +2294,7 @@ module.exports = grammar({
         seq("const", optional($.type_arguments), "{", commaSepTrailingComma($._element), "}"),
         seq("const", "(", $._expression, ")"),
         seq("const", $._record_literal_no_const),
-        seq(".", $.identifier),
+        seq(".", choice($.identifier, alias("new", $.identifier))),
         constantShorthand($),
       ),
 
