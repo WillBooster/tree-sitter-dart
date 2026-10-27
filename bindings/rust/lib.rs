@@ -322,6 +322,18 @@ mod tests {
         );
     }
 
+    #[test]
+    fn this_remains_valid_in_simple_string_interpolation() {
+        let source = "class C { String text() => '$this'; }";
+        let tree = parse_valid(source);
+        let start = source.find("this").unwrap();
+        let node = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 4)
+            .unwrap();
+        assert_eq!(node.kind(), "identifier_dollar_escaped");
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

@@ -9,6 +9,21 @@ import { captureRecord, checkFollowing, matchRecord, nodeRecord } from '../helpe
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 const quotes = ["'", '"', "'''", '"""'];
+const invalidDollarBodies = [
+  '$1',
+  '$!',
+  '$$',
+  '$',
+  '$ a',
+  '$\ta',
+  '$/*comment*/a',
+  '$ {a}',
+  '$\t{a}',
+  '$/*comment*/{a}',
+  String.raw`$\$suffix`,
+  String.raw`$\u0061`,
+  '$é',
+];
 let parser: Parser | undefined;
 const queries: Query[] = [];
 
@@ -60,12 +75,39 @@ for (const quote of quotes) {
     }
   );
 
-  test.each([String.raw`$a\$suffix`, '$a$b', '${a}\\$tail'])(`${quote} raw %s contains no interpolation`, (body) => {
-    const tree = parser!.parse(`var text = r${quote}${body}${quote};\nvoid following() {}`)!;
+  test.each([String.raw`$a\$suffix`, '$a$b', '${a}\\$tail', ...invalidDollarBodies])(
+    `${quote} raw %s contains no interpolation`,
+    (body) => {
+      const source = `var text = r${quote}${body}${quote};\nvoid following() {}`;
+      const tree = parser!.parse(source)!;
+      try {
+        expect(tree.rootNode.hasError).toBe(false);
+        expect(tree.rootNode.descendantsOfType('template_substitution')).toHaveLength(0);
+        checkDollarBoundary(tree, source);
+      } finally {
+        tree.delete();
+      }
+    }
+  );
+
+  test.each(invalidDollarBodies)(`${quote} rejects %s without consuming the following declaration`, (body) => {
+    const source = `var text = ${quote}${body}${quote};\nvoid following() {}`;
+    const tree = parser!.parse(source)!;
+    try {
+      expect(tree.rootNode.hasError).toBe(true);
+      checkDollarBoundary(tree, source);
+    } finally {
+      tree.delete();
+    }
+  });
+
+  test.each(['${ a }', '${/*comment*/a}'])(`${quote} permits trivia inside %s`, (body) => {
+    const source = `var text = ${quote}${body}${quote};\nvoid following() {}`;
+    const tree = parser!.parse(source)!;
     try {
       expect(tree.rootNode.hasError).toBe(false);
-      expect(tree.rootNode.descendantsOfType('template_substitution')).toHaveLength(0);
-      checkFollowing(tree.rootNode);
+      expect(tree.rootNode.descendantsOfType('template_substitution').map((node) => node.text)).toEqual([body]);
+      checkDollarBoundary(tree, source);
     } finally {
       tree.delete();
     }
@@ -81,6 +123,13 @@ const edits = [
   [String.raw`'$a\$suffix'`, String.raw`'''$a\$suffix'''`],
   [String.raw`'$a\$suffix'`, "'$aé'"],
   ["'$aé'", String.raw`'$a\$suffix'`],
+  ["'$a'", "'$ a'"],
+  ["'$ a'", "'$a'"],
+  ["'${a}'", "'$ {a}'"],
+  ["'$ {a}'", "'${ a }'"],
+  ["'$1'", "r'$1'"],
+  ["r'$1'", "'$1'"],
+  ["'$/*comment*/{a}'", "'${/*comment*/a}'"],
 ];
 
 test.each(edits)('editing %s to %s preserves the complete tree and ordered query results', (before, after) => {
@@ -118,6 +167,27 @@ test.each(edits)('editing %s to %s preserves the complete tree and ordered query
     old.delete();
   }
 });
+
+function checkDollarBoundary(tree: Tree, source: string): void {
+  checkFollowing(tree.rootNode);
+  const declaration = tree.rootNode.namedChildren.at(-1)!;
+  expect(declaration.hasError).toBe(false);
+  expect(declaration.startIndex).toBe(source.indexOf('void following() {}'));
+  expect(declaration.endIndex).toBe(source.length);
+  const name = declaration.childForFieldName('signature')!.childForFieldName('name')!;
+  expect([name.text, name.startIndex, name.endIndex]).toEqual([
+    'following',
+    source.indexOf('following'),
+    source.indexOf('following') + 'following'.length,
+  ]);
+  expect(
+    queries[0]!
+      .captures(tree.rootNode)
+      .filter((capture) => capture.name === 'name' && capture.node.text === 'following')
+      .map(({ node }) => [node.startIndex, node.endIndex])
+  ).toEqual([[name.startIndex, name.endIndex]]);
+  for (const query of queries) query.matches(tree.rootNode);
+}
 
 function cleanup(): void {
   const ownedQueries = queries.splice(0);
