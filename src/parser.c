@@ -6185,7 +6185,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 18:
       ACCEPT_TOKEN(aux_sym_comment_token1);
       if (lookahead == '\t' ||
-          (0x0b <= lookahead && lookahead <= '\r') ||
+          lookahead == 0x0b ||
+          lookahead == '\f' ||
           lookahead == ' ') { lexer->get_checkpoint(lexer, &start_tags[0]); ADVANCE(275); }
       if (!eof &&
           (lookahead < '\t' || '\r' < lookahead) &&
@@ -6195,7 +6196,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ACCEPT_TOKEN(aux_sym_comment_token2);
       if (lookahead == '/') { lexer->get_checkpoint(lexer, &start_tags[0]); ADVANCE(280); }
       if (lookahead == '\t' ||
-          (0x0b <= lookahead && lookahead <= '\r') ||
+          lookahead == 0x0b ||
+          lookahead == '\f' ||
           lookahead == ' ') { lexer->get_checkpoint(lexer, &start_tags[0]); ADVANCE(281); }
       if (!eof &&
           (lookahead < '\t' || '\r' < lookahead)) { lexer->get_checkpoint(lexer, &start_tags[0]); ADVANCE(282); }
@@ -7902,14 +7904,15 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 273:
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(anon_sym_SLASH_SLASH);
-      if (lookahead == '/') ADVANCE(279);
+      if (lookahead == '/') ADVANCE(278);
       if (!eof &&
-          lookahead != '\n') ADVANCE(282);
+          lookahead != '\n' &&
+          lookahead != '\r') ADVANCE(282);
       END_STATE();
     case 274:
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(anon_sym_SLASH_SLASH);
-      if (lookahead == '/') ADVANCE(278);
+      if (lookahead == '/') ADVANCE(279);
       if (!eof &&
           lookahead != '\n' &&
           lookahead != '\r') ADVANCE(117);
@@ -7920,7 +7923,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ACCEPT_TOKEN(aux_sym_comment_token1);
       if (lookahead == '/') { lexer->get_checkpoint(lexer, &start_tags[1]); ADVANCE(276); }
       if (lookahead == '\t' ||
-          (0x0b <= lookahead && lookahead <= '\r') ||
+          lookahead == 0x0b ||
+          lookahead == '\f' ||
           lookahead == ' ') TS_LEX_REPEAT(false, ts_lex_state_275);
       if (!eof &&
           (lookahead < '\t' || '\r' < lookahead)) ADVANCE(276);
@@ -7928,7 +7932,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 276:
       ts_lex_state_276:
       if (!eof &&
-          lookahead != '\n') TS_LEX_REPEAT(false, ts_lex_state_276);
+          lookahead != '\n' &&
+          lookahead != '\r') TS_LEX_REPEAT(false, ts_lex_state_276);
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(aux_sym_comment_token1);
       END_STATE();
@@ -7941,20 +7946,22 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ACCEPT_TOKEN(anon_sym_SLASH_SLASH_SLASH);
       if (!eof &&
           lookahead != '\n' &&
-          lookahead != '\r') ADVANCE(117);
+          lookahead != '\r') ADVANCE(282);
       END_STATE();
     case 279:
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(anon_sym_SLASH_SLASH_SLASH);
       if (!eof &&
-          lookahead != '\n') ADVANCE(282);
+          lookahead != '\n' &&
+          lookahead != '\r') ADVANCE(117);
       END_STATE();
     case 280:
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(aux_sym_comment_token2);
       if (lookahead == '/') ADVANCE(273);
       if (!eof &&
-          lookahead != '\n') ADVANCE(282);
+          lookahead != '\n' &&
+          lookahead != '\r') ADVANCE(282);
       END_STATE();
     case 281:
       ts_lex_state_281:
@@ -7962,7 +7969,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ACCEPT_TOKEN(aux_sym_comment_token2);
       if (lookahead == '/') { lexer->get_checkpoint(lexer, &start_tags[1]); ADVANCE(282); }
       if (lookahead == '\t' ||
-          (0x0b <= lookahead && lookahead <= '\r') ||
+          lookahead == 0x0b ||
+          lookahead == '\f' ||
           lookahead == ' ') TS_LEX_REPEAT(false, ts_lex_state_281);
       if (!eof &&
           (lookahead < '\t' || '\r' < lookahead)) ADVANCE(282);
@@ -7970,7 +7978,8 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 282:
       ts_lex_state_282:
       if (!eof &&
-          lookahead != '\n') TS_LEX_REPEAT(false, ts_lex_state_282);
+          lookahead != '\n' &&
+          lookahead != '\r') TS_LEX_REPEAT(false, ts_lex_state_282);
       lexer->mark_start(lexer, &start_tags[0]);
       ACCEPT_TOKEN(aux_sym_comment_token2);
       END_STATE();
