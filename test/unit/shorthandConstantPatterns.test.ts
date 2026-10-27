@@ -61,11 +61,14 @@ for (const pattern of ['.red', '.new']) {
   });
 }
 
-test.each(['const .', 'const .origin(', 'const .origin(,)', 'const .new(,)', 'const ..origin()'])(
+test.each(['const .', 'const .named(value:)', 'const .origin(,)', 'const .new(,)', 'const ..origin()'])(
   '%s remains malformed',
   (pattern) => {
-    const tree = parser!.parse(`void f(Object value) { if (value case ${pattern}) {} }\nvoid following() {}`)!;
+    const source = `void f(Object value) { if (value case ${pattern}) {} }\nvoid following() {}`;
+    const tree = parser!.parse(source)!;
     expect(tree.rootNode.hasError).toBe(true);
+    const start = source.indexOf(pattern);
+    expect(hasErrorWithin(tree.rootNode, source.indexOf('case '), start + pattern.length)).toBe(true);
     tree.delete();
   }
 );
@@ -134,6 +137,13 @@ function checkPatterns(source: string, patterns: string[]): void {
   }
   for (const query of queries) query.captures(tree.rootNode);
   tree.delete();
+}
+
+function hasErrorWithin(node: Node, start: number, end: number): boolean {
+  return (
+    (node.hasError && node.startIndex >= start && node.endIndex <= end) ||
+    node.children.some((child) => hasErrorWithin(child, start, end))
+  );
 }
 
 function nodeRecord(node: Node): unknown[] {
