@@ -12,6 +12,11 @@ const cases = [
     operators: [],
   },
   {
+    source: 'void f(C value) { value..a().b()..c.d()..e?.g<int>()..h<int>(); value?..i(); }',
+    calls: ['a', 'b', 'd', 'g', 'h', 'i'],
+    operators: [],
+  },
+  {
     source: 'void f() { accept(.create()); accept(.create<int>()); }',
     calls: ['accept', 'create', 'accept', 'create'],
     operators: [],
@@ -46,7 +51,9 @@ test.each(cases)('tags callable names in $source', async ({ source, calls, opera
       ] as const) {
         const names = matches
           .filter(({ captures }) => captures.some(({ name }) => name === kind))
-          .map(({ captures }) => captures.find(({ name }) => name === 'name')?.node.text);
+          .map(({ captures }) => captures.find(({ name }) => name === 'name')?.node)
+          .toSorted((left, right) => (left?.startIndex ?? 0) - (right?.startIndex ?? 0))
+          .map((node) => node?.text);
         expect(names).toEqual(expected);
       }
     } finally {

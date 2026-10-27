@@ -155,6 +155,12 @@
 (cascade_call_expression
   property: (identifier) @name) @reference.call
 
+(cascade_call_expression
+  function: [
+    (cascade_member_expression property: (identifier) @name)
+    (cascade_null_aware_member_expression property: (identifier) @name)
+  ]) @reference.call
+
 (call_expression
   function: (static_member_shorthand
     (identifier) @name)) @reference.call
