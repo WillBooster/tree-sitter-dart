@@ -358,18 +358,8 @@ mod tests {
             for type_name in ["C", "C<int>", "prefix.C", "prefix.C<int>"] {
                 let source = format!("var value = {keyword} {type_name}.new();");
                 let tree = parse_valid(&source);
-                let start = source.rfind("new").unwrap();
-                let constructor = tree
-                    .root_node()
-                    .named_descendant_for_byte_range(start, start + 3)
-                    .unwrap();
-                assert_eq!(constructor.kind(), "identifier");
-                let expression = constructor.parent().unwrap();
-                assert_eq!(expression.kind(), expected_kind);
-                assert_eq!(
-                    expression.child_by_field_name("constructor"),
-                    Some(constructor)
-                );
+                let expression =
+                    assert_new_constructor(&tree, &source, expected_kind, "constructor");
                 assert_eq!(
                     expression
                         .child_by_field_name("type")
@@ -400,6 +390,40 @@ mod tests {
                 tree.root_node().to_sexp()
             );
         }
+    }
+
+    #[test]
+    fn redirecting_factories_accept_new_constructor_targets() {
+        for modifier in ["", "const "] {
+            for target in ["Bar", "Bar<T>", "prefix.Bar", "prefix.Bar<T>"] {
+                let source = format!("class Foo<T> {{ {modifier}factory Foo() = {target}.new; }}");
+                let tree = parse_valid(&source);
+                assert_new_constructor(
+                    &tree,
+                    &source,
+                    "redirecting_factory_constructor_signature",
+                    "target_constructor",
+                );
+            }
+        }
+    }
+
+    fn assert_new_constructor<'tree>(
+        tree: &'tree tree_sitter::Tree,
+        source: &str,
+        expected_kind: &str,
+        name_field: &str,
+    ) -> tree_sitter::Node<'tree> {
+        let start = source.rfind("new").unwrap();
+        let name = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 3)
+            .unwrap();
+        assert_eq!(name.kind(), "identifier");
+        let constructor = name.parent().unwrap();
+        assert_eq!(constructor.kind(), expected_kind);
+        assert_eq!(constructor.child_by_field_name(name_field), Some(name));
+        constructor
     }
 
     fn parse_valid(source: &str) -> tree_sitter::Tree {

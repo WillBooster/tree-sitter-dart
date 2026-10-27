@@ -9526,8 +9526,22 @@
                   "type": "FIELD",
                   "name": "target_constructor",
                   "content": {
-                    "type": "SYMBOL",
-                    "name": "identifier"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "identifier"
+                      },
+                      {
+                        "type": "ALIAS",
+                        "content": {
+                          "type": "STRING",
+                          "value": "new"
+                        },
+                        "named": true,
+                        "value": "identifier"
+                      }
+                    ]
                   }
                 }
               ]

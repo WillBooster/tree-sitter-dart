@@ -1793,7 +1793,7 @@ module.exports = grammar({
         field("parameters", $.formal_parameter_list),
         "=",
         field("target", $._type_not_void),
-        optional(seq(".", field("target_constructor", $.identifier))),
+        optional(seq(".", field("target_constructor", choice($.identifier, alias("new", $.identifier))))),
       ),
 
     redirection: ($) =>
