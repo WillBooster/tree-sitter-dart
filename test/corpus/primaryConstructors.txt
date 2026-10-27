@@ -260,10 +260,10 @@ class Generic<T>(final T value) extends Base with Tagged implements Protocol<T> 
           (type_identifier))))
     interfaces: (interfaces
       (type
-        (type_identifier))
-      (type
-        (type
-          (type_identifier))))
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier)))))
     body: (class_body
       (class_member
         (declaration
