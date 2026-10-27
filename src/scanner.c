@@ -10,6 +10,7 @@ enum TokenType {
   DOCUMENTATION_BLOCK_COMMENT,
   ANNOTATION_OPEN_PAREN,
   INTERPOLATION_START,
+  // Never emitted: recovery enables every external token, preserving the template-scanner path.
   ERROR_RECOVERY,
 };
 
