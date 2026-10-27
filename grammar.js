@@ -91,6 +91,8 @@ module.exports = grammar({
     $.block_comment,
     $.documentation_block_comment,
     $.annotation_open_paren,
+    $._interpolation_start,
+    $.__error_recovery,
   ],
 
   extras: ($) => [/\s/, $.comment],
@@ -657,7 +659,6 @@ module.exports = grammar({
             $.template_chars_double_single,
             "'",
             $.escape_sequence,
-            $._sub_string_test,
             $.template_substitution,
           ),
         ),
@@ -672,7 +673,6 @@ module.exports = grammar({
             $.template_chars_single_single,
             '"',
             $.escape_sequence,
-            $._sub_string_test,
             $.template_substitution,
           ),
         ),
@@ -689,7 +689,6 @@ module.exports = grammar({
               "'",
               '"',
               $.escape_sequence,
-              $._sub_string_test,
               $.template_substitution,
             ),
           ),
@@ -707,7 +706,6 @@ module.exports = grammar({
               '"',
               "'",
               $.escape_sequence,
-              $._sub_string_test,
               $.template_substitution,
             ),
           ),
@@ -787,7 +785,7 @@ module.exports = grammar({
 
     template_substitution: ($) =>
       seq(
-        "$",
+        alias($._interpolation_start, "$"),
         choice(
           seq("{", $._expression, "}"),
           $.identifier_dollar_escaped,
