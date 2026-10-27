@@ -1,0 +1,288 @@
+[
+  {
+    "expression": "a ?? b ? c : d",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a",
+        "b"
+      ],
+      "c",
+      "d"
+    ]
+  },
+  {
+    "expression": "a ?? b ?? c",
+    "expected": [
+      "??",
+      [
+        "??",
+        "a",
+        "b"
+      ],
+      "c"
+    ]
+  },
+  {
+    "expression": "a ?? b ?? c ?? d",
+    "expected": [
+      "??",
+      [
+        "??",
+        [
+          "??",
+          "a",
+          "b"
+        ],
+        "c"
+      ],
+      "d"
+    ]
+  },
+  {
+    "expression": "(a ?? b) ? c : d",
+    "expected": [
+      "?:",
+      [
+        "()",
+        [
+          "??",
+          "a",
+          "b"
+        ]
+      ],
+      "c",
+      "d"
+    ]
+  },
+  {
+    "expression": "a ?? (b ? c : d)",
+    "expected": [
+      "??",
+      "a",
+      [
+        "()",
+        [
+          "?:",
+          "b",
+          "c",
+          "d"
+        ]
+      ]
+    ]
+  },
+  {
+    "expression": "a ?? (b ?? c)",
+    "expected": [
+      "??",
+      "a",
+      [
+        "()",
+        [
+          "??",
+          "b",
+          "c"
+        ]
+      ]
+    ]
+  },
+  {
+    "expression": "a ? b ?? c : d ?? e",
+    "expected": [
+      "?:",
+      "a",
+      [
+        "??",
+        "b",
+        "c"
+      ],
+      [
+        "??",
+        "d",
+        "e"
+      ]
+    ]
+  },
+  {
+    "expression": "a ?? b ? c ?? d : e ?? f",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a",
+        "b"
+      ],
+      [
+        "??",
+        "c",
+        "d"
+      ],
+      [
+        "??",
+        "e",
+        "f"
+      ]
+    ]
+  },
+  {
+    "expression": "a ?? b ?? c ? d : e",
+    "expected": [
+      "?:",
+      [
+        "??",
+        [
+          "??",
+          "a",
+          "b"
+        ],
+        "c"
+      ],
+      "d",
+      "e"
+    ]
+  },
+  {
+    "expression": "a ?? (b ?? c) ? d : e",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a",
+        [
+          "()",
+          [
+            "??",
+            "b",
+            "c"
+          ]
+        ]
+      ],
+      "d",
+      "e"
+    ]
+  },
+  {
+    "expression": "a || b ?? c",
+    "expected": [
+      "??",
+      [
+        "||",
+        "a",
+        "b"
+      ],
+      "c"
+    ]
+  },
+  {
+    "expression": "a ?? b || c",
+    "expected": [
+      "??",
+      "a",
+      [
+        "||",
+        "b",
+        "c"
+      ]
+    ]
+  },
+  {
+    "expression": "a ?? b && c",
+    "expected": [
+      "??",
+      "a",
+      [
+        "&&",
+        "b",
+        "c"
+      ]
+    ]
+  },
+  {
+    "expression": "a == b ?? c",
+    "expected": [
+      "??",
+      [
+        "==",
+        "a",
+        "b"
+      ],
+      "c"
+    ]
+  },
+  {
+    "expression": "a ?? b == c",
+    "expected": [
+      "??",
+      "a",
+      [
+        "==",
+        "b",
+        "c"
+      ]
+    ]
+  },
+  {
+    "expression": "a ?? b + c",
+    "expected": [
+      "??",
+      "a",
+      [
+        "+",
+        "b",
+        "c"
+      ]
+    ]
+  },
+  {
+    "expression": "a + b ?? c",
+    "expected": [
+      "??",
+      [
+        "+",
+        "a",
+        "b"
+      ],
+      "c"
+    ]
+  },
+  {
+    "expression": "a?.value ?? b ? c : d",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a?.value",
+        "b"
+      ],
+      "c",
+      "d"
+    ]
+  },
+  {
+    "expression": "a() ?? b() ? c() : d()",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a()",
+        "b()"
+      ],
+      "c()",
+      "d()"
+    ]
+  },
+  {
+    "expression": "a /* left */ ?? /* right */ b ? c : d",
+    "expected": [
+      "?:",
+      [
+        "??",
+        "a",
+        "b"
+      ],
+      "c",
+      "d"
+    ]
+  }
+]
