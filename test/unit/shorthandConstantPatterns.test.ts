@@ -6,21 +6,22 @@ import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 const constructors = ['const .origin()', 'const .filled(2)', 'const .new(1)', 'const .named(value: 2)'];
-let parser: Parser;
-let queries: Query[];
+let parser: Parser | undefined;
+const queries: Query[] = [];
 
 beforeAll(async () => {
   await Parser.init();
   const language = await Language.load(path.join(repositoryRoot, 'tree-sitter-dart.wasm'));
-  parser = new Parser().setLanguage(language);
-  queries = ['tags', 'highlights', 'locals'].map(
-    (name) => new Query(language, fs.readFileSync(path.join(repositoryRoot, `queries/${name}.scm`), 'utf8'))
-  );
+  parser = new Parser();
+  parser.setLanguage(language);
+  for (const name of ['tags', 'highlights', 'locals']) {
+    queries.push(new Query(language, fs.readFileSync(path.join(repositoryRoot, `queries/${name}.scm`), 'utf8')));
+  }
 });
 
 afterAll(() => {
   for (const query of queries) query.delete();
-  parser.delete();
+  parser?.delete();
 });
 
 for (const pattern of constructors) {
@@ -63,7 +64,7 @@ for (const pattern of ['.red', '.new']) {
 test.each(['const .', 'const .origin(', 'const .origin(,)', 'const .new(,)', 'const ..origin()'])(
   '%s remains malformed',
   (pattern) => {
-    const tree = parser.parse(`void f(Object value) { if (value case ${pattern}) {} }\nvoid following() {}`)!;
+    const tree = parser!.parse(`void f(Object value) { if (value case ${pattern}) {} }\nvoid following() {}`)!;
     expect(tree.rootNode.hasError).toBe(true);
     tree.delete();
   }
@@ -82,7 +83,7 @@ test.each(edits)(
     const source = `void f(Object value) { if (value case ${before}) {} }\nvoid following() {}`;
     const startIndex = source.indexOf(before);
     const updated = source.slice(0, startIndex) + after + source.slice(startIndex + before.length);
-    const old = parser.parse(source)!;
+    const old = parser!.parse(source)!;
     old.edit(
       new Edit({
         startIndex,
@@ -93,8 +94,8 @@ test.each(edits)(
         newEndPosition: { row: 0, column: startIndex + after.length },
       })
     );
-    const incremental = parser.parse(updated, old)!;
-    const fresh = parser.parse(updated)!;
+    const incremental = parser!.parse(updated, old)!;
+    const fresh = parser!.parse(updated)!;
     expect(incremental.rootNode.hasError).toBe(hasError);
     expect(nodeRecord(incremental.rootNode)).toEqual(nodeRecord(fresh.rootNode));
     for (const query of queries) {
@@ -115,7 +116,7 @@ test.each(edits)(
 );
 
 function checkPatterns(source: string, patterns: string[]): void {
-  const tree = parser.parse(source)!;
+  const tree = parser!.parse(source)!;
   expect(tree.rootNode.hasError).toBe(false);
   for (const pattern of patterns) {
     const constants = tree.rootNode
