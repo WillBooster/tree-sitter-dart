@@ -2367,8 +2367,7 @@ module.exports = grammar({
         "hide", "native", "on", "sealed", "when", "base", "inline", "type", "augment",
       ),
 
-    // The "super-identifier" - accepts both regular names and contextual keywords
-    identifier: ($) => choice($._name, $._built_in_identifier),
+    identifier: ($) => choice($._name, prec.dynamic(-1, $._built_in_identifier)),
 
     // ========================================================================
     // Comments
