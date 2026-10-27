@@ -2390,8 +2390,8 @@ module.exports = grammar({
         $.block_comment,
         $.documentation_block_comment,
         // Single-line comments
-        seq("//", /([^/\n].*)?/),
-        seq("///", /.*/),
+        seq("//", /([^/\r\n][^\r\n]*)?/),
+        seq("///", /[^\r\n]*/),
       ),
   },
 });
