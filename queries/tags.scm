@@ -135,6 +135,27 @@
 ]
   (#eq? @_constructor "new"))
 
+(_
+  name: (identifier) @name
+  body: (_
+    (class_member
+      (declaration [
+        (constructor_signature !name)
+        (constant_constructor_signature !name)
+        (factory_constructor_signature !name)
+        (redirecting_factory_constructor_signature !name)
+      ])))) @definition.method
+
+(_
+  name: (identifier) @name
+  body: (_
+    (class_member
+      (method_declaration
+        signature: (method_signature [
+          (constructor_signature !name)
+          (factory_constructor_signature !name)
+        ]))))) @definition.method
+
 ; Typedefs
 (type_alias
   (type_identifier) @name) @definition.type

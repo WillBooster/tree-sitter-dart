@@ -1,0 +1,358 @@
+================================================================================
+Concise generative constructors
+================================================================================
+
+class Plain { new() {} new named() {} }
+class Frozen { const new(); const new named(); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (method_declaration
+          signature: (method_signature
+            (constructor_signature
+              parameters: (formal_parameter_list)))
+          body: (function_body
+            (block))))
+      (class_member
+        (method_declaration
+          signature: (method_signature
+            (constructor_signature
+              name: (identifier)
+              parameters: (formal_parameter_list)))
+          body: (function_body
+            (block))))))
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list)))))))
+
+================================================================================
+Concise generative redirections
+================================================================================
+
+class C { const new named(); new() : this.named(); const new redirect() : this.named(); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (constructor_signature
+            parameters: (formal_parameter_list))
+          (redirection
+            (identifier)
+            (arguments))))
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))
+          (redirection
+            (identifier)
+            (arguments)))))))
+
+================================================================================
+Concise factory bodies
+================================================================================
+
+class C { factory() => C.named(); factory named() { return C(); } }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (method_declaration
+          signature: (method_signature
+            (factory_constructor_signature
+              parameters: (formal_parameter_list)))
+          body: (function_body
+            (call_expression
+              function: (member_expression
+                object: (identifier)
+                property: (identifier))
+              arguments: (arguments)))))
+      (class_member
+        (method_declaration
+          signature: (method_signature
+            (factory_constructor_signature
+              name: (identifier)
+              parameters: (formal_parameter_list)))
+          body: (function_body
+            (block
+              (return_statement
+                (call_expression
+                  function: (identifier)
+                  arguments: (arguments))))))))))
+
+================================================================================
+Concise factory redirections
+================================================================================
+
+class C { factory() = D; factory named() = D; }
+class E { const factory() = F; const factory named() = F; }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (redirecting_factory_constructor_signature
+            parameters: (formal_parameter_list)
+            target: (type
+              (type_identifier)))))
+      (class_member
+        (declaration
+          (redirecting_factory_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list)
+            target: (type
+              (type_identifier)))))))
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (redirecting_factory_constructor_signature
+            parameters: (formal_parameter_list)
+            target: (type
+              (type_identifier)))))
+      (class_member
+        (declaration
+          (redirecting_factory_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list)
+            target: (type
+              (type_identifier))))))))
+
+================================================================================
+External concise constructor heads
+================================================================================
+
+class External { external new(); external new named(); }
+class Factory { external factory(); external factory named(); }
+class Frozen { external const new(); external const new named(); }
+class FrozenFactory { external const factory(); external const factory named(); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))))))
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (external)
+          (factory_constructor_signature
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (external)
+          (factory_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))))))
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list))))))
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (external)
+          (factory_constructor_signature
+            parameters: (formal_parameter_list))))
+      (class_member
+        (declaration
+          (external)
+          (factory_constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list)))))))
+
+================================================================================
+Concise constructors in enum extension type and generic class
+================================================================================
+
+enum E { value; const new(); }
+extension type Wrapped(int value) { new named(int this.value); }
+class Generic<T> { new named(T value); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (enum_declaration
+    name: (identifier)
+    body: (enum_body
+      (enum_constant
+        name: (identifier))
+      (class_member
+        (declaration
+          (constant_constructor_signature
+            parameters: (formal_parameter_list))))))
+  (extension_type_declaration
+    name: (identifier)
+    (primary_constructor
+      parameters: (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          name: (identifier))))
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list
+              (formal_parameter
+                (constructor_param
+                  (type
+                    (type_identifier))
+                  (identifier)))))))))
+  (class_declaration
+    name: (identifier)
+    type_parameters: (type_parameters
+      (type_parameter
+        name: (type_identifier)))
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list
+              (formal_parameter
+                (type
+                  (type_identifier))
+                name: (identifier)))))))))
+
+================================================================================
+Concise new head disallows a qualified name
+================================================================================
+
+class C { new C.named(); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            (ERROR)
+            parameters: (formal_parameter_list)))))))
+
+================================================================================
+Concise new head disallows a leading dot
+================================================================================
+
+class C { new.named(); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            (ERROR)
+            name: (identifier)
+            parameters: (formal_parameter_list)))))))
+
+================================================================================
+Malformed concise parameters recover next declaration
+================================================================================
+
+class Broken { new named(,); }
+void following() {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list
+              (ERROR)))))))
+  (function_declaration
+    signature: (function_signature
+      return_type: (type
+        (void_type))
+      name: (identifier)
+      parameters: (formal_parameter_list))
+    body: (function_body
+      (block))))
+
+================================================================================
+Bare factory malformed parameter list
+================================================================================
+
+class C { factory(,); }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (class_declaration
+    name: (identifier)
+    body: (class_body
+      (class_member
+        (declaration
+          (constructor_signature
+            name: (identifier)
+            parameters: (formal_parameter_list
+              (ERROR))))))))
+
