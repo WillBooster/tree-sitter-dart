@@ -1,0 +1,203 @@
+[
+  {
+    "title": "escaped dollar",
+    "body": "$a\\$suffix",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ]
+    ],
+    "expectedEscapes": [
+      [
+        "\\$",
+        2,
+        4
+      ]
+    ]
+  },
+  {
+    "title": "escaped dollar then interpolation",
+    "body": "$a\\$suffix$b",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ],
+      [
+        "b",
+        11,
+        12
+      ]
+    ],
+    "expectedEscapes": [
+      [
+        "\\$",
+        2,
+        4
+      ]
+    ]
+  },
+  {
+    "title": "adjacent simple",
+    "body": "$a$b",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ],
+      [
+        "b",
+        3,
+        4
+      ]
+    ],
+    "expectedEscapes": []
+  },
+  {
+    "title": "simple then braced",
+    "body": "$a${b}",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ]
+    ],
+    "expectedEscapes": []
+  },
+  {
+    "title": "word continuation",
+    "body": "$a_1\\$tail",
+    "expectedSimple": [
+      [
+        "a_1",
+        1,
+        4
+      ]
+    ],
+    "expectedEscapes": [
+      [
+        "\\$",
+        4,
+        6
+      ]
+    ]
+  },
+  {
+    "title": "underscore head",
+    "body": "$_a\\$tail",
+    "expectedSimple": [
+      [
+        "_a",
+        1,
+        3
+      ]
+    ],
+    "expectedEscapes": [
+      [
+        "\\$",
+        3,
+        5
+      ]
+    ]
+  },
+  {
+    "title": "braced control",
+    "body": "${a}\\$tail",
+    "expectedSimple": [],
+    "expectedEscapes": [
+      [
+        "\\$",
+        4,
+        6
+      ]
+    ]
+  },
+  {
+    "title": "escaped control",
+    "body": "\\$a",
+    "expectedSimple": [],
+    "expectedEscapes": [
+      [
+        "\\$",
+        0,
+        2
+      ]
+    ]
+  },
+  {
+    "title": "escaped slash",
+    "body": "\\\\$a\\$tail",
+    "expectedSimple": [
+      [
+        "a",
+        3,
+        4
+      ]
+    ],
+    "expectedEscapes": [
+      [
+        "\\\\",
+        0,
+        2
+      ],
+      [
+        "\\$",
+        4,
+        6
+      ]
+    ]
+  },
+  {
+    "title": "unicode tail",
+    "body": "$aé",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ]
+    ],
+    "expectedEscapes": []
+  },
+  {
+    "title": "punctuation tail",
+    "body": "$a.é",
+    "expectedSimple": [
+      [
+        "a",
+        1,
+        2
+      ]
+    ],
+    "expectedEscapes": []
+  },
+  {
+    "title": "digit tail",
+    "body": "$a1",
+    "expectedSimple": [
+      [
+        "a1",
+        1,
+        3
+      ]
+    ],
+    "expectedEscapes": []
+  },
+  {
+    "title": "braced dollar identifier",
+    "body": "${a$b}\\$tail",
+    "expectedSimple": [],
+    "expectedEscapes": [
+      [
+        "\\$",
+        6,
+        8
+      ]
+    ]
+  }
+]
