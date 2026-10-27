@@ -54,4 +54,54 @@ mod tests {
             .set_language(&super::LANGUAGE.into())
             .expect("Error loading Dart parser");
     }
+
+    #[test]
+    fn preserves_nul_in_comments_and_string_content() {
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&super::LANGUAGE.into()).unwrap();
+        for source in [
+            "/* before\0after */ void following() {}",
+            "/** before\0after */ void following() {}",
+            "/* outer /* before\0after */ outer */ void following() {}",
+            "var text = 'before\0after'; void following() {}",
+            "var text = r'\\before\0after'; void following() {}",
+            "var text = \"before\0after\"; void following() {}",
+            "var text = \"\"\"before\0after\"\"\"; void following() {}",
+        ] {
+            let tree = parser.parse(source, None).unwrap();
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+            let following = root
+                .named_child((root.named_child_count() - 1).try_into().unwrap())
+                .unwrap();
+            assert_eq!(following.kind(), "function_declaration");
+            assert_eq!(
+                following.utf8_text(source.as_bytes()).unwrap(),
+                "void following() {}"
+            );
+        }
+    }
+
+    #[test]
+    fn carriage_return_ends_single_line_strings() {
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&super::LANGUAGE.into()).unwrap();
+        for quote in ["'", "\""] {
+            let source = format!("var text = {quote}before\rafter{quote};\nvoid following() {{}}");
+            let tree = parser.parse(&source, None).unwrap();
+            assert!(
+                tree.root_node().has_error(),
+                "{}",
+                tree.root_node().to_sexp()
+            );
+            let multiline =
+                format!("var text = {quote}{quote}{quote}before\rafter{quote}{quote}{quote};");
+            let tree = parser.parse(&multiline, None).unwrap();
+            assert!(
+                !tree.root_node().has_error(),
+                "{}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
 }
