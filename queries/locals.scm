@@ -14,6 +14,7 @@
   (function_expression)
   (block)
   (for_statement)
+  (for_element)
   (try_statement)
   (catch_clause)
   (finally_clause)
@@ -85,8 +86,9 @@
   alias: (identifier) @local.definition)
 
 ; Pattern bindings (Dart 3.0)
-(variable_pattern
+((variable_pattern
   name: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
 ; ============================================================================
 ; References

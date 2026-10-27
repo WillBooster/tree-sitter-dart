@@ -5942,35 +5942,7 @@
       "required": false,
       "types": [
         {
-          "type": "_instantiation",
-          "named": true
-        },
-        {
-          "type": "_literal",
-          "named": true
-        },
-        {
-          "type": "additive_expression",
-          "named": true
-        },
-        {
           "type": "annotation",
-          "named": true
-        },
-        {
-          "type": "bitwise_and_expression",
-          "named": true
-        },
-        {
-          "type": "bitwise_or_expression",
-          "named": true
-        },
-        {
-          "type": "bitwise_xor_expression",
-          "named": true
-        },
-        {
-          "type": "call_expression",
           "named": true
         },
         {
@@ -5978,39 +5950,7 @@
           "named": true
         },
         {
-          "type": "conditional_expression",
-          "named": true
-        },
-        {
-          "type": "constant_pattern",
-          "named": true
-        },
-        {
-          "type": "constructor_tearoff",
-          "named": true
-        },
-        {
-          "type": "equality_expression",
-          "named": true
-        },
-        {
-          "type": "function_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "if_null_expression",
-          "named": true
-        },
-        {
-          "type": "index_expression",
-          "named": true
-        },
-        {
-          "type": "instantiation_expression",
           "named": true
         },
         {
@@ -6018,23 +5958,7 @@
           "named": true
         },
         {
-          "type": "logical_and_expression",
-          "named": true
-        },
-        {
-          "type": "logical_or_expression",
-          "named": true
-        },
-        {
           "type": "map_pattern",
-          "named": true
-        },
-        {
-          "type": "member_expression",
-          "named": true
-        },
-        {
-          "type": "multiplicative_expression",
           "named": true
         },
         {
@@ -6042,31 +5966,7 @@
           "named": true
         },
         {
-          "type": "null_assertion_expression",
-          "named": true
-        },
-        {
-          "type": "null_aware_index_expression",
-          "named": true
-        },
-        {
-          "type": "null_aware_member_expression",
-          "named": true
-        },
-        {
-          "type": "null_check_pattern",
-          "named": true
-        },
-        {
           "type": "object_pattern",
-          "named": true
-        },
-        {
-          "type": "parenthesized_expression",
-          "named": true
-        },
-        {
-          "type": "postfix_expression",
           "named": true
         },
         {
@@ -6074,39 +5974,7 @@
           "named": true
         },
         {
-          "type": "relational_expression",
-          "named": true
-        },
-        {
-          "type": "relational_operator",
-          "named": true
-        },
-        {
-          "type": "shift_expression",
-          "named": true
-        },
-        {
-          "type": "static_member_shorthand",
-          "named": true
-        },
-        {
-          "type": "switch_expression",
-          "named": true
-        },
-        {
           "type": "type",
-          "named": true
-        },
-        {
-          "type": "type_cast_expression",
-          "named": true
-        },
-        {
-          "type": "type_test_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
           "named": true
         },
         {
@@ -6766,35 +6634,7 @@
       "required": false,
       "types": [
         {
-          "type": "_instantiation",
-          "named": true
-        },
-        {
-          "type": "_literal",
-          "named": true
-        },
-        {
-          "type": "additive_expression",
-          "named": true
-        },
-        {
           "type": "annotation",
-          "named": true
-        },
-        {
-          "type": "bitwise_and_expression",
-          "named": true
-        },
-        {
-          "type": "bitwise_or_expression",
-          "named": true
-        },
-        {
-          "type": "bitwise_xor_expression",
-          "named": true
-        },
-        {
-          "type": "call_expression",
           "named": true
         },
         {
@@ -6802,39 +6642,7 @@
           "named": true
         },
         {
-          "type": "conditional_expression",
-          "named": true
-        },
-        {
-          "type": "constant_pattern",
-          "named": true
-        },
-        {
-          "type": "constructor_tearoff",
-          "named": true
-        },
-        {
-          "type": "equality_expression",
-          "named": true
-        },
-        {
-          "type": "function_expression",
-          "named": true
-        },
-        {
           "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "if_null_expression",
-          "named": true
-        },
-        {
-          "type": "index_expression",
-          "named": true
-        },
-        {
-          "type": "instantiation_expression",
           "named": true
         },
         {
@@ -6842,23 +6650,7 @@
           "named": true
         },
         {
-          "type": "logical_and_expression",
-          "named": true
-        },
-        {
-          "type": "logical_or_expression",
-          "named": true
-        },
-        {
           "type": "map_pattern",
-          "named": true
-        },
-        {
-          "type": "member_expression",
-          "named": true
-        },
-        {
-          "type": "multiplicative_expression",
           "named": true
         },
         {
@@ -6866,31 +6658,7 @@
           "named": true
         },
         {
-          "type": "null_assertion_expression",
-          "named": true
-        },
-        {
-          "type": "null_aware_index_expression",
-          "named": true
-        },
-        {
-          "type": "null_aware_member_expression",
-          "named": true
-        },
-        {
-          "type": "null_check_pattern",
-          "named": true
-        },
-        {
           "type": "object_pattern",
-          "named": true
-        },
-        {
-          "type": "parenthesized_expression",
-          "named": true
-        },
-        {
-          "type": "postfix_expression",
           "named": true
         },
         {
@@ -6898,39 +6666,7 @@
           "named": true
         },
         {
-          "type": "relational_expression",
-          "named": true
-        },
-        {
-          "type": "relational_operator",
-          "named": true
-        },
-        {
-          "type": "shift_expression",
-          "named": true
-        },
-        {
-          "type": "static_member_shorthand",
-          "named": true
-        },
-        {
-          "type": "switch_expression",
-          "named": true
-        },
-        {
           "type": "type",
-          "named": true
-        },
-        {
-          "type": "type_cast_expression",
-          "named": true
-        },
-        {
-          "type": "type_test_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
           "named": true
         },
         {
@@ -13422,7 +13158,7 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "_instantiation",
@@ -13466,10 +13202,6 @@
         },
         {
           "type": "conditional_expression",
-          "named": true
-        },
-        {
-          "type": "constant_pattern",
           "named": true
         },
         {
@@ -13541,10 +13273,6 @@
           "named": true
         },
         {
-          "type": "null_check_pattern",
-          "named": true
-        },
-        {
           "type": "object_pattern",
           "named": true
         },
@@ -13566,10 +13294,6 @@
         },
         {
           "type": "relational_expression",
-          "named": true
-        },
-        {
-          "type": "relational_operator",
           "named": true
         },
         {

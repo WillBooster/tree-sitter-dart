@@ -172,6 +172,10 @@
 (initialized_identifier
   (identifier) @variable)
 
+((variable_pattern
+  name: (identifier) @variable)
+  (#not-eq? @variable "_"))
+
 (static_final_declaration
   (identifier) @variable)
 
