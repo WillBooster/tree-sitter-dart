@@ -59,3 +59,19 @@ test('parentheses retain an inner cascade receiver', () => {
     tree.delete();
   }
 });
+
+test.each(['c?a:b=d..z();', 'c?a:throw d..z();'])(
+  'keeps a conditional branch from absorbing the trailing cascade: %s',
+  (body) => {
+    const tree = parser!.parse(`void f(){${body}}`)!;
+    try {
+      expect(tree.rootNode.hasError, tree.rootNode.toString()).toBe(false);
+      const statement = tree.rootNode.descendantsOfType('expression_statement')[0]!;
+      expect(statement.namedChildren.map((node) => node.type)).toEqual(['conditional_expression', 'cascade_section']);
+      expect(statement.namedChildren[0]?.descendantsOfType('cascade_section').map((node) => node.text)).toEqual([]);
+      expect(statement.namedChildren[1]?.text).toBe('..z()');
+    } finally {
+      tree.delete();
+    }
+  }
+);
