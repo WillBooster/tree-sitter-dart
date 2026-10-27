@@ -9,6 +9,9 @@ enum TokenType {
   BLOCK_COMMENT,
   DOCUMENTATION_BLOCK_COMMENT,
   ANNOTATION_OPEN_PAREN,
+  INTERPOLATION_START,
+  // Never emitted: recovery enables every external token, preserving the template-scanner path.
+  ERROR_RECOVERY,
 };
 
 void *tree_sitter_dart_external_scanner_create() { return NULL; }
@@ -25,6 +28,14 @@ static void advance(TSLexer *lexer);
 bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
   (void)payload;
+  if (valid_symbols[INTERPOLATION_START] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '$') {
+    advance(lexer);
+    lexer->mark_end(lexer);
+    int32_t next = lexer->lookahead;
+    if (next != '{' && next != '_' && !(next >= 'a' && next <= 'z') && !(next >= 'A' && next <= 'Z')) return false;
+    lexer->result_symbol = INTERPOLATION_START;
+    return true;
+  }
   if (valid_symbols[TEMPLATE_CHARS_DOUBLE] || valid_symbols[TEMPLATE_CHARS_SINGLE] ||
       valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) {
     return scan_templates(lexer, valid_symbols);
