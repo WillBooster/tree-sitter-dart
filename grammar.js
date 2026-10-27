@@ -1024,7 +1024,7 @@ module.exports = grammar({
     if_null_expression: ($) =>
       prec.left(
         PREC.IF_NULL,
-        seq($._real_expression, repeat1(seq("??", $._real_expression))),
+        seq($._real_expression, "??", $._real_expression),
       ),
 
     // --- Logical ---
