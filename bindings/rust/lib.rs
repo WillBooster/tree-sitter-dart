@@ -239,6 +239,66 @@ mod tests {
         assert!(!tree.root_node().to_sexp().contains("(function_type"));
     }
 
+    #[test]
+    fn declaration_modifiers_are_not_function_return_types() {
+        for (keyword, source) in [
+            ("static", "class C { static Function() callback = () {}; }"),
+            (
+                "covariant",
+                "class C { covariant Function() field = () {}; }",
+            ),
+            ("late", "class C { late Function() later; }"),
+            ("external", "class C { external Function() native; }"),
+            ("external", "class C { external set value(v); }"),
+            (
+                "required",
+                "class C { C({required this.number}); final int number; }",
+            ),
+        ] {
+            let tree = parse_valid(source);
+            let start = source.find(keyword).unwrap();
+            let node = tree
+                .root_node()
+                .named_descendant_for_byte_range(start, start + keyword.len())
+                .unwrap();
+            assert_ne!(
+                node.kind(),
+                "type_identifier",
+                "{source}: {}",
+                tree.root_node().to_sexp()
+            );
+            assert_ne!(
+                node.kind(),
+                "identifier",
+                "{source}: {}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
+
+    #[test]
+    fn built_in_words_remain_identifiers_outside_modifier_positions() {
+        for name in ["static", "covariant", "late", "external", "required"] {
+            for source in [
+                format!("var {name} = 1;"),
+                format!("void f(dynamic value) {{ value.{name}(); }}"),
+            ] {
+                let tree = parse_valid(&source);
+                let start = source.find(name).unwrap();
+                let node = tree
+                    .root_node()
+                    .named_descendant_for_byte_range(start, start + name.len())
+                    .unwrap();
+                assert_eq!(
+                    node.kind(),
+                    "identifier",
+                    "{source}: {}",
+                    tree.root_node().to_sexp()
+                );
+            }
+        }
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(
