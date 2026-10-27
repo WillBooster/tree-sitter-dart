@@ -196,3 +196,42 @@ testCommand(
     },
   }
 );
+
+testCommand(
+  'pattern loops preserve iterable, lambda, body, and adjacent outer binding scopes',
+  [
+    'script/tree-sitter',
+    'highlight',
+    '--grammar-path',
+    '.',
+    '--html',
+    '--layout',
+    'fragment',
+    '--style',
+    'minimal',
+    '--config-path',
+    'test/fixtures/patternHighlightConfig.json',
+    'test/fixtures/patternIterableScope.dart',
+  ],
+  120_000,
+  {
+    env: { TREE_SITTER_LIBDIR: highlightCache, CARGO_BUILD_JOBS: '1' },
+    check: (output) => {
+      const expected = [
+        ['variable', 'function', 'variable', 'function'],
+        ['variable', 'function', 'variable'],
+        ['variable', 'function', 'function', 'variable'],
+        ['variable', 'function', 'function', 'variable'],
+        ['variable', 'function', 'variable', 'variable', 'variable'],
+        ['variable', 'function', 'variable', 'variable', 'variable'],
+      ];
+      const loops = output.split('\n').filter((line) => line.includes('for (var ('));
+      expect(loops).toHaveLength(expected.length);
+      for (const [index, line] of loops.entries()) {
+        const styles = [...line.matchAll(/<span class=['"]([^'"]+)['"]>a<\/span>/g)].map((match) => match[1]);
+        expect(styles, line).toEqual(expected[index]);
+      }
+      expect(output).toMatch(/}<span class=['"]function['"]>a<\/span>\(\);/);
+    },
+  }
+);

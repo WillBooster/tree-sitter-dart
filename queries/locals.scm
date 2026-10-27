@@ -21,6 +21,11 @@
   (switch_statement_case)
 ] @local.scope
 
+[
+  (for_statement value: (_)+ @local.definition-value)
+  (for_element value: (_)+ @local.definition-value)
+] @local.definition-context
+
 ; ============================================================================
 ; Definitions
 ; ============================================================================

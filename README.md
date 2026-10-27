@@ -73,14 +73,21 @@ parser.setLanguage(await Language.load(grammar));
 
 The package also ships `grammar.js`, the queries in `queries/`, and the node types in `src/node-types.json`.
 
+The locals queries require the WillBooster Rust highlighter or CLI version 15.2.1 or later.
+Loop bindings become available after the entire iterable expression and stop at the loop boundary.
+Custom highlighters must support `@local.definition-context` with all `@local.definition-value` captures
+for the same context node. Definitions before the combined value range become available after it;
+definitions inside the iterable, such as lambda parameters, retain their own scope.
+The Web runtime exposes these query captures; consumers implement their own locals resolution.
+
 In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
 [willbooster-tree-sitter](https://crates.io/crates/willbooster-tree-sitter), the runtime this package is tested and
 fuzzed with:
 
 ```toml
 [dependencies]
-tree-sitter = { package = "willbooster-tree-sitter", version = "15.0.0" }
-tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "13" }
+tree-sitter = { package = "willbooster-tree-sitter", version = "15.2.1" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "15" }
 ```
 
 ```rust
