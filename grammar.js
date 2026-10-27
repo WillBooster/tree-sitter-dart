@@ -902,10 +902,16 @@ module.exports = grammar({
 
     _expression_without_cascade: ($) =>
       choice(
-        $.assignment_expression,
+        alias($._assignment_expression_without_cascade, $.assignment_expression),
         $._real_expression,
-        $.throw_expression,
+        alias($._throw_expression_without_cascade, $.throw_expression),
       ),
+
+    _assignment_expression_without_cascade: ($) =>
+      assignmentExpression($, $._expression_without_cascade),
+
+    _throw_expression_without_cascade: ($) =>
+      seq("throw", field("value", $._expression_without_cascade)),
 
     _real_expression: ($) =>
       choice(
@@ -933,14 +939,7 @@ module.exports = grammar({
     // --- Assignment ---
 
     assignment_expression: ($) =>
-      prec.right(
-        PREC.ASSIGNMENT,
-        seq(
-          field("left", $.assignable_expression),
-          field("operator", $._assignment_operator),
-          field("right", $._expression),
-        ),
-      ),
+      assignmentExpression($, $._expression),
 
     _assignment_operator: (_) =>
       choice(
@@ -2451,4 +2450,15 @@ function primaryConstructorHeader($, typeParameters, constructorRequired = false
 
 function sep1(rule, separator) {
   return seq(rule, repeat(seq(separator, rule)));
+}
+
+function assignmentExpression($, expression) {
+  return prec.right(
+    PREC.ASSIGNMENT,
+    seq(
+      field("left", $.assignable_expression),
+      field("operator", $._assignment_operator),
+      field("right", expression),
+    ),
+  );
 }
