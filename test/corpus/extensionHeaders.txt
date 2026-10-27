@@ -294,11 +294,11 @@ extension type Broken(const int value);
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
+        (ERROR)
         (formal_parameter
           (type
             (type_identifier))
-          name: (identifier))
-        (ERROR)))))
+          name: (identifier))))))
 
 ================================================================================
 Extension representation rejects late final parameter modifier
@@ -313,11 +313,12 @@ extension type Broken(late final int value);
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
+        (ERROR
+          (identifier))
         (formal_parameter
           (type
             (type_identifier))
-          name: (identifier))
-        (ERROR)))))
+          name: (identifier))))))
 
 ================================================================================
 Extension field parameter rejects const modifier
@@ -332,12 +333,11 @@ extension type Broken(const int this.value) {}
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
+        (ERROR)
         (formal_parameter
           (constructor_param
             (type
               (type_identifier))
-            (ERROR
-              (identifier))
             (identifier)))))
     body: (class_body)))
 
@@ -354,12 +354,12 @@ extension type Broken(late final int this.value) {}
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
+        (ERROR
+          (identifier)
+          (formal_parameter
+            name: (identifier)))
         (formal_parameter
           (constructor_param
-            (type
-              (type_identifier))
-            (ERROR
-              (identifier))
             (identifier)))))
     body: (class_body)))
 
@@ -376,11 +376,10 @@ extension type Broken(const int super.value) {}
     name: (identifier)
     (primary_constructor
       parameters: (formal_parameter_list
+        (ERROR)
         (formal_parameter
           (super_formal_parameter
             (type
               (type_identifier))
-            (ERROR
-              (identifier))
             (identifier)))))
     body: (class_body)))

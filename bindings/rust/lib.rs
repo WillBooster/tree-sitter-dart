@@ -299,6 +299,133 @@ mod tests {
         }
     }
 
+    #[test]
+    fn reserved_words_cannot_name_variables_parameters_or_types() {
+        for source in [
+            "var class = 1;",
+            "void f(int throw) {}",
+            "List<false> values = [];",
+        ] {
+            let tree = parse(source);
+            assert!(
+                tree.root_node().has_error(),
+                "{source}: {}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
+
+    #[test]
+    fn keyword_prefixes_remain_valid_identifiers() {
+        parse_valid(
+            "class Classic {} var classified = 1; void f(int returnValue) { if (returnValue > 0) { return; } }",
+        );
+    }
+
+    #[test]
+    fn this_remains_valid_in_simple_string_interpolation() {
+        let source = "class C { String text() => '$this'; }";
+        let tree = parse_valid(source);
+        let start = source.find("this").unwrap();
+        let node = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 4)
+            .unwrap();
+        assert_eq!(node.kind(), "identifier_dollar_escaped");
+    }
+
+    #[test]
+    fn void_symbol_keeps_its_identifier_leaf() {
+        let source = "var symbol = #void;";
+        let tree = parse_valid(source);
+        let start = source.find("void").unwrap();
+        let node = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 4)
+            .unwrap();
+        assert_eq!(node.kind(), "identifier");
+        assert_eq!(node.named_child_count(), 0);
+        assert_eq!(node.parent().unwrap().kind(), "symbol_literal");
+        assert!(parse("var symbol = #prefix.void;").root_node().has_error());
+    }
+
+    #[test]
+    fn new_constructor_names_keep_explicit_fields() {
+        for (keyword, expected_kind) in [
+            ("new", "new_expression"),
+            ("const", "const_object_expression"),
+        ] {
+            for type_name in ["C", "C<int>", "prefix.C", "prefix.C<int>"] {
+                let source = format!("var value = {keyword} {type_name}.new();");
+                let tree = parse_valid(&source);
+                let expression =
+                    assert_new_constructor(&tree, &source, expected_kind, "constructor");
+                assert_eq!(
+                    expression
+                        .child_by_field_name("type")
+                        .unwrap()
+                        .utf8_text(source.as_bytes())
+                        .unwrap(),
+                    type_name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn generic_new_calls_are_not_relational_comparisons() {
+        let prefix = "var value = ";
+        for type_name in ["C", "prefix.C"] {
+            let call = format!("{type_name}<int>.new()");
+            let source = format!("{prefix}{call};");
+            let tree = parse_valid(&source);
+            let expression = tree
+                .root_node()
+                .named_descendant_for_byte_range(prefix.len(), prefix.len() + call.len())
+                .unwrap();
+            assert_eq!(
+                expression.kind(),
+                "constructor_invocation",
+                "{}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
+
+    #[test]
+    fn redirecting_factories_accept_new_constructor_targets() {
+        for modifier in ["", "const "] {
+            for target in ["Bar", "Bar<T>", "prefix.Bar", "prefix.Bar<T>"] {
+                let source = format!("class Foo<T> {{ {modifier}factory Foo() = {target}.new; }}");
+                let tree = parse_valid(&source);
+                assert_new_constructor(
+                    &tree,
+                    &source,
+                    "redirecting_factory_constructor_signature",
+                    "target_constructor",
+                );
+            }
+        }
+    }
+
+    fn assert_new_constructor<'tree>(
+        tree: &'tree tree_sitter::Tree,
+        source: &str,
+        expected_kind: &str,
+        name_field: &str,
+    ) -> tree_sitter::Node<'tree> {
+        let start = source.rfind("new").unwrap();
+        let name = tree
+            .root_node()
+            .named_descendant_for_byte_range(start, start + 3)
+            .unwrap();
+        assert_eq!(name.kind(), "identifier");
+        let constructor = name.parent().unwrap();
+        assert_eq!(constructor.kind(), expected_kind);
+        assert_eq!(constructor.child_by_field_name(name_field), Some(name));
+        constructor
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

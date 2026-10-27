@@ -99,6 +99,16 @@ module.exports = grammar({
 
   word: ($) => $._name,
 
+  reserved: {
+    global: ($) => [
+      "assert", "break", "case", "catch", "class", "const", "continue",
+      "default", "do", "else", "enum", "extends", "false", "final",
+      "finally", "for", "if", "in", "is", "new", "null", "rethrow",
+      "return", "super", "switch", "this", "throw", "true", "try",
+      "var", "void", "while", "with",
+    ],
+  },
+
   supertypes: ($) => [$._statement, $._literal, $._declaration, $._instantiation],
 
   precedences: ($) => [
@@ -782,6 +792,7 @@ module.exports = grammar({
           "#",
           choice(
             seq($.identifier, repeat(seq(".", $.identifier))),
+            alias($.void_type, $.identifier),
             "~",
             $.binary_operator,
             "[]",
@@ -1267,15 +1278,16 @@ module.exports = grammar({
       choice($.new_expression, $.const_object_expression, $.constructor_invocation),
 
     new_expression: ($) =>
-      seq("new", field("type", $._type_not_void), optional(seq(".", field("constructor", $.identifier))), field("arguments", $.arguments)),
+      seq("new", field("type", $._type_not_void), optional(seq(".", field("constructor", choice($.identifier, alias("new", $.identifier))))), field("arguments", $.arguments)),
 
     const_object_expression: ($) =>
-      seq("const", field("type", $._type_not_void), optional(seq(".", field("constructor", $.identifier))), field("arguments", $.arguments)),
+      seq("const", field("type", $._type_not_void), optional(seq(".", field("constructor", choice($.identifier, alias("new", $.identifier))))), field("arguments", $.arguments)),
 
     constructor_invocation: ($) =>
       prec.right(
         choice(
           seq(field("type", $._type_name), $.type_arguments, ".", field("constructor", $.identifier), field("arguments", $.arguments)),
+          prec.dynamic(2, seq(field("type", $._type_name), $.type_arguments, ".", field("constructor", alias("new", $.identifier)), field("arguments", $.arguments))),
           seq(field("type", $._type_name), ".", "new", field("arguments", $.arguments)),
         ),
       ),
@@ -1781,7 +1793,7 @@ module.exports = grammar({
         field("parameters", $.formal_parameter_list),
         "=",
         field("target", $._type_not_void),
-        optional(seq(".", field("target_constructor", $.identifier))),
+        optional(seq(".", field("target_constructor", choice($.identifier, alias("new", $.identifier))))),
       ),
 
     redirection: ($) =>
@@ -2283,7 +2295,7 @@ module.exports = grammar({
         seq("const", optional($.type_arguments), "{", commaSepTrailingComma($._element), "}"),
         seq("const", "(", $._expression, ")"),
         seq("const", $._record_literal_no_const),
-        seq(".", $.identifier),
+        seq(".", choice($.identifier, alias("new", $.identifier))),
         constantShorthand($),
       ),
 
