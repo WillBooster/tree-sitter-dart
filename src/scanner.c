@@ -10,6 +10,7 @@ enum TokenType {
   DOCUMENTATION_BLOCK_COMMENT,
   ANNOTATION_OPEN_PAREN,
   INTERPOLATION_START,
+  INSTANTIATION_CLOSE,
   // Never emitted: recovery enables every external token, preserving the template-scanner path.
   ERROR_RECOVERY,
 };
@@ -24,6 +25,10 @@ static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
 static bool scan_multiline_comments(TSLexer *lexer);
 static bool is_whitespace(int32_t c);
 static void advance(TSLexer *lexer);
+static bool scan_instantiation_close(TSLexer *lexer);
+static bool skip_trivia(TSLexer *lexer);
+static bool skip_comment(TSLexer *lexer);
+static bool scan_block_comment_body(TSLexer *lexer);
 
 bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
@@ -50,6 +55,10 @@ bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
   }
 
   while (is_whitespace(lexer->lookahead)) lexer->advance(lexer, true);
+
+  if (valid_symbols[INSTANTIATION_CLOSE] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '>') {
+    return scan_instantiation_close(lexer);
+  }
 
   if (lexer->lookahead == '/') {
     return scan_multiline_comments(lexer);
@@ -102,6 +111,60 @@ static bool scan_multiline_comments(TSLexer *lexer) {
   advance(lexer);
   lexer->result_symbol = lexer->lookahead == '*' ? DOCUMENTATION_BLOCK_COMMENT : BLOCK_COMMENT;
 
+  return scan_block_comment_body(lexer);
+}
+
+static bool scan_instantiation_close(TSLexer *lexer) {
+  advance(lexer);
+  lexer->mark_end(lexer);
+  if (lexer->lookahead == '=') return false;
+  if (!skip_trivia(lexer)) return false;
+  lexer->result_symbol = INSTANTIATION_CLOSE;
+  switch (lexer->lookahead) {
+    case '(':
+    case ')':
+    case ']':
+    case '}':
+    case ';':
+    case ':':
+    case ',':
+      return true;
+    case '.':
+      advance(lexer);
+      return lexer->lookahead != '.';
+    case '=':
+    case '!':
+      advance(lexer);
+      return lexer->lookahead == '=';
+    default:
+      return lexer->eof(lexer);
+  }
+}
+
+static bool skip_trivia(TSLexer *lexer) {
+  for (;;) {
+    if (is_whitespace(lexer->lookahead)) {
+      advance(lexer);
+    } else if (lexer->lookahead == '/') {
+      if (!skip_comment(lexer)) return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+static bool skip_comment(TSLexer *lexer) {
+  advance(lexer);
+  if (lexer->lookahead == '/') {
+    while (!lexer->eof(lexer) && lexer->lookahead != '\n' && lexer->lookahead != '\r') advance(lexer);
+    return true;
+  }
+  if (lexer->lookahead != '*') return false;
+  advance(lexer);
+  return scan_block_comment_body(lexer);
+}
+
+static bool scan_block_comment_body(TSLexer *lexer) {
   unsigned nesting_depth = 1;
   while (!lexer->eof(lexer)) {
     int32_t previous = lexer->lookahead;
