@@ -541,8 +541,7 @@ extension type JSArray<T extends JSAny?>._(JSArrayRepType _jsArray) implements J
       (type_parameter
         name: (type_identifier)
         bound: (type
-          (type_identifier))
-        bound: (type)))
+          (type_identifier))))
     (primary_constructor
       name: (identifier)
       parameters: (formal_parameter_list

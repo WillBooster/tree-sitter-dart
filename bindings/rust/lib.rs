@@ -180,6 +180,65 @@ mod tests {
         }
     }
 
+    #[test]
+    fn function_types_keep_their_return_types_and_parameter_lists() {
+        for (prefix, function_type, suffix) in [
+            ("typedef F = ", "Future<int> Function()", ";"),
+            ("typedef F = ", "void Function(int)", ";"),
+            ("typedef F = ", "(int, int) Function()", ";"),
+            ("List<", "Future<int> Function()", "> values = [];"),
+            ("bool f(Object x) => x is ", "Future<int> Function()", ";"),
+            ("typedef F = ", "Future<void> Function()", "?;"),
+        ] {
+            let source = format!("{prefix}{function_type}{suffix}");
+            let tree = parse_valid(&source);
+            let node = tree
+                .root_node()
+                .named_descendant_for_byte_range(prefix.len(), prefix.len() + function_type.len())
+                .unwrap();
+            assert_eq!(
+                node.kind(),
+                "function_type",
+                "{source}: {}",
+                tree.root_node().to_sexp()
+            );
+            assert!(node.to_sexp().contains("(parameter_type_list"));
+            assert!(!node.to_sexp().contains("(relational_expression"));
+        }
+    }
+
+    #[test]
+    fn lone_return_type_nodes_keep_their_named_children() {
+        for (text, expected_kind) in [("void", "void_type"), ("(int, int)", "record_type")] {
+            let prefix = "typedef F = ";
+            let source = format!("{prefix}{text} Function();");
+            let tree = parse_valid(&source);
+            let node = tree
+                .root_node()
+                .named_descendant_for_byte_range(prefix.len(), prefix.len() + text.len())
+                .unwrap();
+            assert_eq!(node.kind(), expected_kind, "{}", tree.root_node().to_sexp());
+            assert_eq!(node.parent().unwrap().kind(), "type");
+        }
+    }
+
+    #[test]
+    fn function_names_and_bare_function_types_remain_distinct() {
+        for source in ["Function value;", "Function? value;"] {
+            let tree = parse_valid(source);
+            assert!(!tree.root_node().to_sexp().contains("(function_type"));
+        }
+        let tree = parse_valid("void f() { Function(); Function.named(); g<Function>(x); }");
+        assert_eq!(
+            tree.root_node()
+                .to_sexp()
+                .matches("(call_expression")
+                .count(),
+            3
+        );
+        assert!(!tree.root_node().to_sexp().contains("(function_type"));
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

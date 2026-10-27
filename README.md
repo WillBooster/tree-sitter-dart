@@ -80,7 +80,7 @@ fuzzed with:
 ```toml
 [dependencies]
 tree-sitter = { package = "willbooster-tree-sitter", version = "15.0.0" }
-tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "11" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "12" }
 ```
 
 ```rust

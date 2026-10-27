@@ -106,55 +106,54 @@ module.exports = grammar({
   ],
 
   conflicts: ($) => [
-    // Type vs expression ambiguity: `x<y>` could be type args or relational
-    // [$.type_arguments, $.relational_expression], -- unnecessary
-    // Identifier could be type_identifier or expression
-    [$._type_name, $._primary],
-    [$._type_name, $._primary, $._function_name],
-    // [$._type_name, $._primary, $.function_signature], -- covered by _function_name conflicts
-    [$._primary, $._simple_formal_parameter],
-    [$._primary, $._simple_formal_parameter, $.constant_pattern],
-    // Constructor signature shares prefix with function_signature
-    // [$.constructor_signature, $._formal_parameter_part], -- covered by _function_name conflicts
-    // Declaration ambiguity with external/static
-    [$.declaration, $._external_and_static],
-    // Type ambiguities
-    [$._type_not_function, $._type_not_void],
     [$._type_not_void_not_function],
-    [$._type_not_void],
     [$._function_type_tail],
     [$._type_not_void_not_function, $._function_type_tail],
-    [$.type, $._type_not_function],
-    [$.type, $._function_type_tail, $._built_in_identifier],
-    [$.type, $._type_not_function, $._function_type_tail, $._built_in_identifier],
-    [$.type, $._function_type_tail],
-    [$.type, $._type_not_function, $._function_type_tail],
-    [$._type_not_function, $._function_type_tail, $._built_in_identifier],
-    [$._type_not_void, $._function_type_tail, $._built_in_identifier],
-    [$._type_not_function, $._type_not_void, $._function_type_tail, $._built_in_identifier],
-    [$._type_not_function, $._function_type_tail],
-    [$.type, $._type_not_function, $._type_not_void, $._function_type_tail, $._built_in_identifier],
-    [$._type_not_void, $._function_type_tail],
+    [$.type, $._built_in_identifier],
+    [$.type, $._type_not_function_inner, $._built_in_identifier],
+    [$._type_not_function_inner, $._built_in_identifier],
+    [$._type_not_void_inner, $._built_in_identifier],
+    [$._type_not_void_not_function_inner, $._built_in_identifier],
+    [$._type_not_function_inner, $._type_not_void_inner, $._built_in_identifier],
+    [$._type_not_function_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$._type_not_void_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$._type_not_function_inner, $._type_not_void_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$.type, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$.type, $._type_not_function_inner, $._type_not_void_inner, $._built_in_identifier],
+    [$.type, $._type_not_function_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$.type, $._type_not_void_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
+    [$.type, $._type_not_function_inner, $._type_not_void_inner, $._type_not_void_not_function_inner, $._built_in_identifier],
     [$.function_type],
-    // Var or type ambiguities
+    [$.type, $._type_not_function_inner],
+    [$._type_not_void_inner, $._function_type_tail, $._built_in_identifier],
+    [$._type_not_void_not_function_inner, $._function_type_tail, $._built_in_identifier],
+    [$.type, $._type_not_void_not_function_inner],
+    [$.type, $._type_not_void_not_function_inner, $._function_type_tail],
+    [$.type, $._type_not_void_not_function_inner, $._function_type_tail, $._built_in_identifier],
+    [$._type_not_function_inner, $._type_not_void_inner],
+    [$._type_not_function_inner, $._type_not_void_not_function_inner, $._function_type_tail, $._built_in_identifier],
+    [$._type_not_void_inner, $._type_not_void_not_function_inner, $._function_type_tail, $._built_in_identifier],
+    [$._type_not_function_inner, $._type_not_void_inner, $._type_not_void_not_function_inner, $._function_type_tail, $._built_in_identifier],
+    [$._type_not_void_not_function_inner, $._function_type_tail],
+    [$._type_not_void_inner],
+    [$._type_not_void_not_function_inner],
+    [$._type_not_void_not_function, $._function_type_tail, $._built_in_identifier],
+    [$._function_type_tail, $._built_in_identifier],
+    [$._type_name, $._primary],
+    [$._type_name, $._primary, $._function_name],
+    [$._primary, $._simple_formal_parameter],
+    [$._primary, $._simple_formal_parameter, $.constant_pattern],
+    [$.declaration, $._external_and_static],
     [$._var_or_type],
     [$._var_or_type, $.function_signature],
     [$._var_or_type, $._function_formal_parameter],
     [$._final_const_var_or_type],
     [$._final_const_var_or_type, $.const_object_expression],
-    // Expression ambiguities
     [$._expression],
     [$._primary, $.assignable_expression],
     [$._primary, $.labeled_statement],
-    // Assignable-vs-wrapper: same chain reduces under either name; lookahead picks
     [$.assignable_expression, $.null_aware_index_expression, $._unary_expression],
-    // Type name ambiguities
     [$._type_name],
-    // [$._type_name, $._simple_formal_parameter], -- subsumed
-    // [$._type_name, $._function_formal_parameter], -- subsumed
-    // [$._type_name, $.function_signature], -- covered by _function_name conflicts
-    // [$._type_name, $._primary, $.assignable_expression], -- subsumed
-    // Parameter ambiguities
     [$._normal_formal_parameters],
     [$.typed_identifier, $._var_or_type, $._function_formal_parameter],
     [$.record_type_field, $._function_formal_parameter, $._var_or_type],
@@ -167,66 +166,40 @@ module.exports = grammar({
     [$._primary_function_formal_parameter, $._type_name],
     [$.record_type_field, $._final_var_or_type],
     [$._final_var_or_type],
-    // Type parameter vs type name
     [$.type_parameter, $._type_name],
-    // For loop parts ambiguity
     [$._var_or_type, $._for_loop_parts, $.pattern_variable_declaration],
     [$.pattern_variable_declaration, $._for_loop_parts, $._final_const_var_or_type],
     [$.pattern_variable_declaration, $._var_or_type],
     [$._final_const_var_or_type, $.pattern_variable_declaration],
-    // Pattern ambiguities
     [$.set_or_map_literal, $.map_pattern],
     [$.list_literal, $.list_pattern],
     [$.static_member_shorthand, $.constant_pattern],
-    // [$.constant_pattern, $._type_name], -- subsumed
     [$._primary, $.constant_pattern],
     [$._instantiation, $.constant_pattern],
-    // [$._primary, $.constant_pattern, $._type_name], -- subsumed
-    // [$._primary, $.constant_pattern, $._simple_formal_parameter], -- subsumed
-    // [$._primary, $.constant_pattern, $._type_name, $._simple_formal_parameter], -- subsumed
     [$._literal, $.constant_pattern],
     [$.prefix_operator, $.constant_pattern],
     [$._parenthesized_pattern, $._pattern_field],
     [$.set_or_map_literal, $.constant_pattern],
     [$.list_literal, $.constant_pattern],
     [$.record_literal, $.constant_pattern],
-    // Constructor tearoff vs primary
     [$.constructor_tearoff, $._identifier_or_new],
-    // [$._simple_formal_parameter, $.assignable_expression], -- unnecessary
-    // Declaration external
     [$.declaration, $.external],
-    // Type arguments vs type parameters vs relational
     [$.type_arguments, $.relational_operator],
-    // [$.relational_operator, $.type_parameters], -- unnecessary
     [$.type_arguments, $.relational_operator, $.type_parameters],
-    // Generic call/instantiation vs comparisons (TS-style GLR fork on `<`)
     [$._unary_expression, $.instantiation_expression],
-    // Record literal vs record field / record type
     [$._record_literal_no_const, $.record_field],
     [$.record_type, $._record_literal_no_const],
     [$.record_type, $._record_literal_no_const, $.record_pattern],
     [$._record_literal_no_const, $.record_pattern],
     [$.record_type, $.record_pattern],
     [$._record_literal_no_const, $.formal_parameter_list],
-    // Block vs set_or_map literal
     [$.block, $.set_or_map_literal],
-    // Empty switch block vs empty switch expression
     [$.switch_block, $.switch_expression],
-    // Primary + constructor_param
     [$._primary, $.constructor_param],
-    // Switch statement case
     [$.switch_statement_case],
-    // Primary + function_formal_parameter + type_name
     [$._type_name, $._function_formal_parameter],
     [$._type_name, $.constant_pattern],
     [$._type_name, $._simple_formal_parameter],
-    // [$._type_name, $._function_name], -- subsumed
-    // [$._type_name, $._function_name, $._primary], -- subsumed
-    // [$._function_name, $.constructor_signature], -- subsumed
-    // Built-in identifier conflicts
-    // Top-level wrapper rules competing with `_built_in_identifier` for the
-    // `augment` lookahead. Each top-level form needs to keep itself alive when
-    // a containing rule (class/mixin/etc.) is also a candidate.
     [$.function_declaration, $.getter_declaration, $.setter_declaration,
      $.external_function_declaration, $.external_getter_declaration, $.external_setter_declaration,
      $.top_level_variable_declaration, $._built_in_identifier],
@@ -276,12 +249,9 @@ module.exports = grammar({
     [$._type_name, $._primary, $._function_formal_parameter],
     [$._type_name, $._primary, $._simple_formal_parameter, $.constant_pattern],
     [$._type_name, $.assignable_expression, $._primary],
-    [$._type_not_void_not_function, $._function_type_tail, $._built_in_identifier],
-    [$._function_type_tail, $._built_in_identifier],
     [$.factory_constructor_signature, $._built_in_identifier],
     [$.assignable_expression, $._simple_formal_parameter],
     [$._primary, $.super_formal_parameter],
-    // this.identifier in initializer_list_entry vs redirection
     [$.initializer_list_entry, $._identifier_or_new],
   ],
 
@@ -448,35 +418,33 @@ module.exports = grammar({
         nullable("Function"),
       ),
 
-    _type_not_function: ($) =>
-      alias(
-        choice(
-          nullable(seq($._type_name, optional($.type_arguments))),
-          nullable("Function"),
-          nullable($.record_type),
-          $.void_type,
-        ),
-        $.type,
+    _type_not_function: ($) => alias($._type_not_function_inner, $.type),
+
+    _type_not_function_inner: ($) =>
+      choice(
+        nullable(seq($._type_name, optional($.type_arguments))),
+        nullable("Function"),
+        nullable($.record_type),
+        $.void_type,
       ),
 
-    _type_not_void: ($) =>
-      alias(
-        choice(
-          nullable($.function_type),
-          nullable($.record_type),
-          nullable(seq($._type_name, optional($.type_arguments))),
-          nullable("Function"),
-        ),
-        $.type,
+    _type_not_void: ($) => alias($._type_not_void_inner, $.type),
+
+    _type_not_void_inner: ($) =>
+      choice(
+        nullable($.function_type),
+        nullable($.record_type),
+        nullable(seq($._type_name, optional($.type_arguments))),
+        nullable("Function"),
       ),
 
     _type_not_void_not_function: ($) =>
-      alias(
-        choice(
-          nullable(seq($._type_name, optional($.type_arguments))),
-          nullable("Function"),
-        ),
-        $.type,
+      alias($._type_not_void_not_function_inner, $.type),
+
+    _type_not_void_not_function_inner: ($) =>
+      choice(
+        nullable(seq($._type_name, optional($.type_arguments))),
+        nullable("Function"),
       ),
 
     _type_name: ($) =>
@@ -498,12 +466,12 @@ module.exports = grammar({
     _function_type_tails: ($) => repeat1($._function_type_tail),
 
     _function_type_tail: ($) =>
-      seq(
+      prec.dynamic(3, seq(
         "Function",
         optional($.type_parameters),
-        optional($.parameter_type_list),
+        $.parameter_type_list,
         optional("?"),
-      ),
+      )),
 
     parameter_type_list: ($) =>
       seq(

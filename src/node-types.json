@@ -3715,7 +3715,7 @@
         ]
       },
       "type": {
-        "multiple": true,
+        "multiple": false,
         "required": true,
         "types": [
           {
@@ -7435,7 +7435,7 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "parameter_type_list",
@@ -10991,7 +10991,7 @@
         ]
       },
       "type": {
-        "multiple": true,
+        "multiple": false,
         "required": true,
         "types": [
           {
@@ -14364,7 +14364,7 @@
         ]
       },
       "target": {
-        "multiple": true,
+        "multiple": false,
         "required": true,
         "types": [
           {
@@ -15873,7 +15873,7 @@
     "named": true,
     "fields": {
       "type": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
@@ -16827,23 +16827,7 @@
           "named": true
         },
         {
-          "type": "parameter_type_list",
-          "named": true
-        },
-        {
           "type": "record_type",
-          "named": true
-        },
-        {
-          "type": "record_type_field",
-          "named": true
-        },
-        {
-          "type": "record_type_named_field",
-          "named": true
-        },
-        {
-          "type": "type",
           "named": true
         },
         {
@@ -16852,10 +16836,6 @@
         },
         {
           "type": "type_identifier",
-          "named": true
-        },
-        {
-          "type": "type_parameters",
           "named": true
         },
         {
@@ -16916,7 +16896,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": true,
       "types": [
         {
@@ -17075,7 +17055,7 @@
     "named": true,
     "fields": {
       "bound": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
           {
