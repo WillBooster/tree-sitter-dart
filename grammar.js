@@ -315,7 +315,7 @@ module.exports = grammar({
     // Library structure (Phase 9)
     // ========================================================================
 
-    script_tag: (_) => seq("#!", /[^\n]*/, "\n"),
+    script_tag: (_) => seq("#!", /[^\n\r]*/),
 
     library_name: ($) =>
       choice(
@@ -656,7 +656,7 @@ module.exports = grammar({
           choice(
             $.template_chars_double_single,
             "'",
-            $.escape_sequence,
+            alias($._escape_sequence_single_line, $.escape_sequence),
             $._sub_string_test,
             $.template_substitution,
           ),
@@ -671,7 +671,7 @@ module.exports = grammar({
           choice(
             $.template_chars_single_single,
             '"',
-            $.escape_sequence,
+            alias($._escape_sequence_single_line, $.escape_sequence),
             $._sub_string_test,
             $.template_substitution,
           ),
@@ -724,8 +724,7 @@ module.exports = grammar({
             "'",
             $.template_chars_raw_slash,
             $._unused_escape_sequence,
-            $._sub_string_test,
-            "$",
+            token.nonkeyword("$"),
           ),
         ),
         '"',
@@ -740,8 +739,7 @@ module.exports = grammar({
             '"',
             $.template_chars_raw_slash,
             $._unused_escape_sequence,
-            $._sub_string_test,
-            "$",
+            token.nonkeyword("$"),
           ),
         ),
         "'",
@@ -758,8 +756,7 @@ module.exports = grammar({
               $.template_chars_raw_slash,
               '"',
               $._unused_escape_sequence,
-              $._sub_string_test,
-              "$",
+              token.nonkeyword("$"),
             ),
           ),
           '"""',
@@ -777,8 +774,7 @@ module.exports = grammar({
               "'",
               $.template_chars_raw_slash,
               $._unused_escape_sequence,
-              $._sub_string_test,
-              "$",
+              token.nonkeyword("$"),
             ),
           ),
           "'''",
@@ -787,32 +783,22 @@ module.exports = grammar({
 
     template_substitution: ($) =>
       seq(
-        "$",
+        token.nonkeyword("$"),
         choice(
           seq("{", $._expression, "}"),
           $.identifier_dollar_escaped,
         ),
       ),
 
-    _sub_string_test: (_) => seq("$", /[^a-zA-Z_{]/),
+    _sub_string_test: (_) => token(seq("$", /[^a-zA-Z_{'"$\\\n\r]/)),
 
-    identifier_dollar_escaped: (_) => /[a-zA-Z_]\w*/,
+    identifier_dollar_escaped: (_) => token.nonkeyword(token.immediate(/[a-zA-Z_]\w*/)),
 
-    _unused_escape_sequence: (_) =>
-      token.immediate(
-        seq(
-          "\\",
-          choice(
-            /[^xu0-7]/,
-            /[0-7]{1,3}/,
-            /x[0-9a-fA-F]{2}/,
-            /u[0-9a-fA-F]{4}/,
-            /u\{[0-9a-fA-F]+\}/,
-          ),
-        ),
-      ),
+    _unused_escape_sequence: (_) => escapeSequence(/[^xu]/),
 
     escape_sequence: ($) => $._unused_escape_sequence,
+
+    _escape_sequence_single_line: (_) => escapeSequence(/[^xu\n\r]/),
 
     // --- Symbol literals ---
 
@@ -2425,6 +2411,15 @@ module.exports = grammar({
       ),
   },
 });
+
+function escapeSequence(anyChar) {
+  return token.immediate(seq("\\", choice(
+    anyChar,
+    /x[0-9a-fA-F]{2}/,
+    /u[0-9a-fA-F]{4}/,
+    /u\{[0-9a-fA-F]+\}/,
+  )));
+}
 
 function constantShorthand($) {
   return seq("const", ".", choice($.identifier, "new"), $.arguments);
