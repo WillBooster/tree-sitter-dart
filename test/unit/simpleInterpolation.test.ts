@@ -1,19 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  Edit,
-  Language,
-  type Node,
-  Parser,
-  Query,
-  type QueryCapture,
-  type QueryMatch,
-  type Tree,
-} from '@willbooster/web-tree-sitter';
+import { Edit, Language, Parser, Query, type Tree } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import fixtures from '../fixtures/simpleInterpolation.json';
+import { captureRecord, checkFollowing, matchRecord, nodeRecord } from '../helpers/treeRecords';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 const quotes = ["'", '"', "'''", '"""'];
@@ -133,47 +125,4 @@ function cleanup(): void {
   parser = undefined;
   for (const query of ownedQueries) query.delete();
   ownedParser?.delete();
-}
-
-function checkFollowing(root: Node): void {
-  const declaration = root.namedChildren.at(-1)!;
-  expect(declaration.type).toBe('function_declaration');
-  expect(declaration.childForFieldName('signature')!.childForFieldName('name')!.text).toBe('following');
-}
-
-function nodeRecord(node: Node): unknown[] {
-  return [
-    node.type,
-    node.isNamed,
-    node.isMissing,
-    node.hasError,
-    node.startIndex,
-    node.endIndex,
-    node.startPosition,
-    node.endPosition,
-    node.children.map((child, index) => [node.fieldNameForChild(index), nodeRecord(child)]),
-  ];
-}
-
-function matchRecord(match: QueryMatch): Record<string, unknown> {
-  const { captures, ...metadata } = match;
-  return { ...metadata, captures: captures.map(captureRecord) };
-}
-
-function captureRecord(capture: QueryCapture): Record<string, unknown> {
-  const { node, ...metadata } = capture;
-  return {
-    ...metadata,
-    node: {
-      type: node.type,
-      text: node.text,
-      startIndex: node.startIndex,
-      endIndex: node.endIndex,
-      startPosition: node.startPosition,
-      endPosition: node.endPosition,
-      isNamed: node.isNamed,
-      isMissing: node.isMissing,
-      hasError: node.hasError,
-    },
-  };
 }
