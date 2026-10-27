@@ -93,6 +93,7 @@ module.exports = grammar({
     $.annotation_open_paren,
     $._interpolation_start,
     $._instantiation_close,
+    $._comment_separated_open_paren,
     $.__error_recovery,
   ],
 
@@ -543,9 +544,9 @@ module.exports = grammar({
 
     record_type: ($) =>
       choice(
-        seq("(", ")"),
+        seq(recordOpenParen($), ")"),
         seq(
-          "(",
+          recordOpenParen($),
           commaSep1($.record_type_field),
           ",",
           "{",
@@ -553,9 +554,9 @@ module.exports = grammar({
           "}",
           ")",
         ),
-        seq("(", commaSep1TrailingComma($.record_type_field), ")"),
+        seq(recordOpenParen($), commaSep1TrailingComma($.record_type_field), ")"),
         seq(
-          "(",
+          recordOpenParen($),
           "{",
           commaSep1TrailingComma($.record_type_named_field),
           "}",
@@ -2465,4 +2466,8 @@ function assignmentExpression($, expression) {
       field("right", expression),
     ),
   );
+}
+
+function recordOpenParen($) {
+  return choice("(", alias($._comment_separated_open_paren, "("));
 }

@@ -1843,8 +1843,22 @@
           "type": "SEQ",
           "members": [
             {
-              "type": "STRING",
-              "value": "("
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_comment_separated_open_paren"
+                  },
+                  "named": false,
+                  "value": "("
+                }
+              ]
             },
             {
               "type": "STRING",
@@ -1856,8 +1870,22 @@
           "type": "SEQ",
           "members": [
             {
-              "type": "STRING",
-              "value": "("
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_comment_separated_open_paren"
+                  },
+                  "named": false,
+                  "value": "("
+                }
+              ]
             },
             {
               "type": "SEQ",
@@ -1943,8 +1971,22 @@
           "type": "SEQ",
           "members": [
             {
-              "type": "STRING",
-              "value": "("
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_comment_separated_open_paren"
+                  },
+                  "named": false,
+                  "value": "("
+                }
+              ]
             },
             {
               "type": "SEQ",
@@ -1993,8 +2035,22 @@
           "type": "SEQ",
           "members": [
             {
-              "type": "STRING",
-              "value": "("
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_comment_separated_open_paren"
+                  },
+                  "named": false,
+                  "value": "("
+                }
+              ]
             },
             {
               "type": "STRING",
@@ -14987,6 +15043,10 @@
     {
       "type": "SYMBOL",
       "name": "_instantiation_close"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_comment_separated_open_paren"
     },
     {
       "type": "SYMBOL",
