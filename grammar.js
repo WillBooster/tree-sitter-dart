@@ -194,6 +194,10 @@ module.exports = grammar({
     [$._literal, $.constant_pattern],
     [$.prefix_operator, $.constant_pattern],
     [$._parenthesized_pattern, $._pattern_field],
+    [$._declaration_parenthesized_pattern, $._declaration_pattern_field],
+    [$._type_name, $._declared_name],
+    [$.record_type, $._declaration_record_pattern],
+    [$.record_type_field, $._declaration_typed_name],
     [$.set_or_map_literal, $.constant_pattern],
     [$.list_literal, $.constant_pattern],
     [$.record_literal, $.constant_pattern],
@@ -1526,7 +1530,7 @@ module.exports = grammar({
         seq(
           optional($._metadata),
           choice("final", "var"),
-          $._outer_pattern,
+          $._declaration_outer_pattern,
           "in",
           field("value", $._expression),
         ),
@@ -2288,7 +2292,7 @@ module.exports = grammar({
         $.object_pattern,
       ),
 
-    cast_pattern: ($) => seq($._primary_pattern, "as", field("type", $.type)),
+    cast_pattern: ($) => castPattern($, $._primary_pattern),
 
     null_check_pattern: ($) => seq($._primary_pattern, "?"),
 
@@ -2317,46 +2321,93 @@ module.exports = grammar({
 
     _parenthesized_pattern: ($) => seq("(", $._pattern, ")"),
 
-    list_pattern: ($) =>
-      seq(
-        optional($.type_arguments),
-        "[",
-        commaSepTrailingComma(choice($._pattern, $.rest_pattern)),
-        "]",
-      ),
+    list_pattern: ($) => listPattern($, $._pattern, $.rest_pattern),
 
-    rest_pattern: ($) => seq("...", optional($._pattern)),
+    rest_pattern: ($) => restPattern($._pattern),
 
-    map_pattern: ($) =>
-      seq(
-        optional($.type_arguments),
-        "{",
-        commaSepTrailingComma(choice(seq($._expression, ":", $._pattern), $.rest_pattern)),
-        "}",
-      ),
+    map_pattern: ($) => mapPattern($, $._pattern, $.rest_pattern),
 
-    record_pattern: ($) =>
-      seq("(", commaSepTrailingComma($._pattern_field), ")"),
+    record_pattern: ($) => recordPattern($._pattern_field),
 
-    _pattern_field: ($) =>
-      seq(optional(choice($.label, ":")), $._pattern),
+    _pattern_field: ($) => patternField($, $._pattern),
 
-    object_pattern: ($) =>
-      seq(
-        $._type_name,
-        optional($.type_arguments),
-        "(",
-        commaSepTrailingComma($._pattern_field),
-        ")",
-      ),
+    object_pattern: ($) => objectPattern($, $._pattern_field),
 
     pattern_variable_declaration: ($) =>
       seq(
         choice("final", "var"),
-        $._outer_pattern,
+        $._declaration_outer_pattern,
         "=",
         $._expression,
       ),
+
+    _declaration_outer_pattern: ($) =>
+      choice(
+        $._declaration_parenthesized_pattern,
+        alias($._declaration_list_pattern, $.list_pattern),
+        alias($._declaration_map_pattern, $.map_pattern),
+        alias($._declaration_record_pattern, $.record_pattern),
+        alias($._declaration_object_pattern, $.object_pattern),
+      ),
+
+    _declaration_pattern: ($) =>
+      seq(
+        $._declaration_unary_pattern,
+        repeat(seq("&&", $._declaration_unary_pattern)),
+      ),
+
+    _declaration_unary_pattern: ($) =>
+      choice(
+        alias($._declaration_cast_pattern, $.cast_pattern),
+        alias($._declaration_null_assert_pattern, $.null_assert_pattern),
+        $._declaration_primary_pattern,
+      ),
+
+    _declaration_primary_pattern: ($) =>
+      choice(
+        alias($._declared_name, $.variable_pattern),
+        alias($._declaration_typed_name, $.variable_pattern),
+        $._declaration_outer_pattern,
+      ),
+
+    _declared_name: ($) => field("name", $.identifier),
+
+    _declaration_typed_name: ($) =>
+      seq($.type, field("name", $.identifier)),
+
+    _declaration_cast_pattern: ($) =>
+      castPattern($, $._declaration_primary_pattern),
+
+    _declaration_null_assert_pattern: ($) =>
+      seq($._declaration_primary_pattern, "!"),
+
+    _declaration_parenthesized_pattern: ($) =>
+      seq("(", $._declaration_pattern, ")"),
+
+    _declaration_list_pattern: ($) =>
+      listPattern(
+        $,
+        $._declaration_pattern,
+        alias($._declaration_rest_pattern, $.rest_pattern),
+      ),
+
+    _declaration_rest_pattern: ($) => restPattern($._declaration_pattern),
+
+    _declaration_map_pattern: ($) =>
+      mapPattern(
+        $,
+        $._declaration_pattern,
+        alias($._declaration_rest_pattern, $.rest_pattern),
+      ),
+
+    _declaration_record_pattern: ($) =>
+      recordPattern($._declaration_pattern_field),
+
+    _declaration_pattern_field: ($) =>
+      patternField($, $._declaration_pattern),
+
+    _declaration_object_pattern: ($) =>
+      objectPattern($, $._declaration_pattern_field),
 
     _outer_pattern: ($) =>
       choice(
@@ -2467,6 +2518,49 @@ function sep1(rule, separator) {
   return seq(rule, repeat(seq(separator, rule)));
 }
 
+function listPattern($, pattern, rest) {
+  return seq(
+    optional($.type_arguments),
+    "[",
+    commaSepTrailingComma(choice(pattern, rest)),
+    "]",
+  );
+}
+
+function restPattern(pattern) {
+  return seq("...", optional(pattern));
+}
+
+function mapPattern($, pattern, rest) {
+  return seq(
+    optional($.type_arguments),
+    "{",
+    commaSepTrailingComma(choice(seq($._expression, ":", pattern), rest)),
+    "}",
+  );
+}
+
+function recordPattern(patternField) {
+  return seq("(", commaSepTrailingComma(patternField), ")");
+}
+
+function patternField($, pattern) {
+  return seq(optional(choice($.label, ":")), pattern);
+}
+
+function objectPattern($, patternField) {
+  return seq(
+    $._type_name,
+    optional($.type_arguments),
+    "(",
+    commaSepTrailingComma(patternField),
+    ")",
+  );
+}
+
+function castPattern($, primary) {
+  return seq(primary, "as", field("type", $.type));
+}
 function assignmentExpression($, expression) {
   return prec.right(
     PREC.ASSIGNMENT,
