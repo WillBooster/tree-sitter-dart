@@ -48,17 +48,7 @@ pub const TAGS_QUERY: &str = include_str!("../../queries/tags.scm");
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_can_load_grammar() {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&super::LANGUAGE.into())
-            .expect("Error loading Dart parser");
-    }
-
-    #[test]
     fn preserves_nul_in_comments_and_string_content() {
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&super::LANGUAGE.into()).unwrap();
         for source in [
             "/* before\0after */ void following() {}",
             "/** before\0after */ void following() {}",
@@ -68,7 +58,7 @@ mod tests {
             "var text = \"before\0after\"; void following() {}",
             "var text = \"\"\"before\0after\"\"\"; void following() {}",
         ] {
-            let tree = parser.parse(source, None).unwrap();
+            let tree = parse(source);
             let root = tree.root_node();
             assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
             let following = root
@@ -84,11 +74,9 @@ mod tests {
 
     #[test]
     fn carriage_return_ends_single_line_strings() {
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&super::LANGUAGE.into()).unwrap();
         for quote in ["'", "\""] {
             let source = format!("var text = {quote}before\rafter{quote};\nvoid following() {{}}");
-            let tree = parser.parse(&source, None).unwrap();
+            let tree = parse(&source);
             assert!(
                 tree.root_node().has_error(),
                 "{}",
@@ -96,19 +84,80 @@ mod tests {
             );
             let multiline =
                 format!("var text = {quote}{quote}{quote}before\rafter{quote}{quote}{quote};");
-            let tree = parser.parse(&multiline, None).unwrap();
-            assert!(
-                !tree.root_node().has_error(),
-                "{}",
-                tree.root_node().to_sexp()
+            parse_valid(&multiline);
+        }
+    }
+
+    #[test]
+    fn single_line_strings_reject_escaped_line_terminators() {
+        for quote in ["'", "\""] {
+            for body in ["a\\\nb", "a\\\rb"] {
+                let source = format!("var s = {quote}{body}{quote};\nvoid following() {{}}");
+                let tree = parse(&source);
+                assert!(
+                    tree.root_node().has_error(),
+                    "{source:?}: {}",
+                    tree.root_node().to_sexp()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn decimal_digits_do_not_extend_an_escape() {
+        for quote in ["'", "\"", "'''", "\"\"\""] {
+            let source = format!("var s = {quote}\\012{quote};");
+            let tree = parse_valid(&source);
+            let start = source.find('\\').unwrap();
+            let escape = tree
+                .root_node()
+                .descendant_for_byte_range(start, start + 2)
+                .unwrap();
+            assert_eq!(escape.kind(), "escape_sequence");
+            assert_eq!(escape.utf8_text(source.as_bytes()).unwrap(), "\\0");
+        }
+    }
+
+    #[test]
+    fn multiline_strings_keep_escaped_line_terminators() {
+        for quote in ["'''", "\"\"\""] {
+            for body in ["a\\\nb", "a\\\rb"] {
+                let source = format!("var s = {quote}{body}{quote};\nvoid following() {{}}");
+                let tree = parse_valid(&source);
+                let following = tree.root_node().named_child(1).unwrap();
+                assert_eq!(
+                    following.utf8_text(source.as_bytes()).unwrap(),
+                    "void following() {}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn shebang_ends_at_carriage_return_or_eof() {
+        for ending in ["", "\n", "\r", "\r\n"] {
+            let mut source = format!("#!/usr/bin/env dart{ending}");
+            if !ending.is_empty() {
+                source.push_str("void following() {}");
+            }
+            let tree = parse(&source);
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+            assert_eq!(
+                root.named_child(0)
+                    .unwrap()
+                    .utf8_text(source.as_bytes())
+                    .unwrap(),
+                "#!/usr/bin/env dart"
             );
+            if !ending.is_empty() {
+                assert_eq!(root.named_child(1).unwrap().kind(), "function_declaration");
+            }
         }
     }
 
     #[test]
     fn non_reserved_variance_words_can_name_type_parameters() {
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&super::LANGUAGE.into()).unwrap();
         for name in ["out", "inout"] {
             for declaration in [
                 format!("class C<{name}> {{}}"),
@@ -116,9 +165,8 @@ mod tests {
                 format!("class C<{name} extends Object> {{}}"),
                 format!("void f<{name}>() {{}}"),
             ] {
-                let tree = parser.parse(&declaration, None).unwrap();
+                let tree = parse_valid(&declaration);
                 let root = tree.root_node();
-                assert!(!root.has_error(), "{declaration}: {}", root.to_sexp());
                 let start = declaration.find('<').unwrap() + 1;
                 let identifier = root
                     .named_descendant_for_byte_range(start, start + name.len())
@@ -130,5 +178,21 @@ mod tests {
                 assert!(parameter.child_by_field_name("variance").is_none());
             }
         }
+    }
+
+    fn parse_valid(source: &str) -> tree_sitter::Tree {
+        let tree = parse(source);
+        assert!(
+            !tree.root_node().has_error(),
+            "{source:?}: {}",
+            tree.root_node().to_sexp()
+        );
+        tree
+    }
+
+    fn parse(source: &str) -> tree_sitter::Tree {
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&super::LANGUAGE.into()).unwrap();
+        parser.parse(source, None).unwrap()
     }
 }
