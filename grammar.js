@@ -92,6 +92,7 @@ module.exports = grammar({
     $.documentation_block_comment,
     $.annotation_open_paren,
     $._interpolation_start,
+    $._instantiation_close,
     $.__error_recovery,
   ],
 
@@ -1170,9 +1171,12 @@ module.exports = grammar({
       prec("instantiation",
         seq(
           field("function", $._postfix_expression),
-          field("type_arguments", $.type_arguments),
+          field("type_arguments", alias($._instantiation_type_arguments, $.type_arguments)),
         ),
       ),
+
+    _instantiation_type_arguments: ($) =>
+      seq("<", commaSep1($.type), alias($._instantiation_close, ">")),
 
     ...postfixChainWrappers("_postfix_expression", ""),
 
