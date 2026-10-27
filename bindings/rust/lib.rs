@@ -349,6 +349,59 @@ mod tests {
         assert!(parse("var symbol = #prefix.void;").root_node().has_error());
     }
 
+    #[test]
+    fn new_constructor_names_keep_explicit_fields() {
+        for (keyword, expected_kind) in [
+            ("new", "new_expression"),
+            ("const", "const_object_expression"),
+        ] {
+            for type_name in ["C", "C<int>", "prefix.C", "prefix.C<int>"] {
+                let source = format!("var value = {keyword} {type_name}.new();");
+                let tree = parse_valid(&source);
+                let start = source.rfind("new").unwrap();
+                let constructor = tree
+                    .root_node()
+                    .named_descendant_for_byte_range(start, start + 3)
+                    .unwrap();
+                assert_eq!(constructor.kind(), "identifier");
+                let expression = constructor.parent().unwrap();
+                assert_eq!(expression.kind(), expected_kind);
+                assert_eq!(
+                    expression.child_by_field_name("constructor"),
+                    Some(constructor)
+                );
+                assert_eq!(
+                    expression
+                        .child_by_field_name("type")
+                        .unwrap()
+                        .utf8_text(source.as_bytes())
+                        .unwrap(),
+                    type_name
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn generic_new_calls_are_not_relational_comparisons() {
+        let prefix = "var value = ";
+        for type_name in ["C", "prefix.C"] {
+            let call = format!("{type_name}<int>.new()");
+            let source = format!("{prefix}{call};");
+            let tree = parse_valid(&source);
+            let expression = tree
+                .root_node()
+                .named_descendant_for_byte_range(prefix.len(), prefix.len() + call.len())
+                .unwrap();
+            assert_eq!(
+                expression.kind(),
+                "constructor_invocation",
+                "{}",
+                tree.root_node().to_sexp()
+            );
+        }
+    }
+
     fn parse_valid(source: &str) -> tree_sitter::Tree {
         let tree = parse(source);
         assert!(

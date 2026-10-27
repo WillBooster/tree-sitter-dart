@@ -1278,15 +1278,16 @@ module.exports = grammar({
       choice($.new_expression, $.const_object_expression, $.constructor_invocation),
 
     new_expression: ($) =>
-      seq("new", field("type", $._type_not_void), optional(seq(".", field("constructor", $.identifier))), field("arguments", $.arguments)),
+      seq("new", field("type", $._type_not_void), optional(seq(".", field("constructor", choice($.identifier, alias("new", $.identifier))))), field("arguments", $.arguments)),
 
     const_object_expression: ($) =>
-      seq("const", field("type", $._type_not_void), optional(seq(".", field("constructor", $.identifier))), field("arguments", $.arguments)),
+      seq("const", field("type", $._type_not_void), optional(seq(".", field("constructor", choice($.identifier, alias("new", $.identifier))))), field("arguments", $.arguments)),
 
     constructor_invocation: ($) =>
       prec.right(
         choice(
           seq(field("type", $._type_name), $.type_arguments, ".", field("constructor", $.identifier), field("arguments", $.arguments)),
+          prec.dynamic(2, seq(field("type", $._type_name), $.type_arguments, ".", field("constructor", alias("new", $.identifier)), field("arguments", $.arguments))),
           seq(field("type", $._type_name), ".", "new", field("arguments", $.arguments)),
         ),
       ),
