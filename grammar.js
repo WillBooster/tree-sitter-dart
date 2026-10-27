@@ -796,7 +796,7 @@ module.exports = grammar({
 
     _sub_string_test: (_) => seq("$", /[^a-zA-Z_{]/),
 
-    identifier_dollar_escaped: (_) => /([a-zA-Z_]|(\\\$))([\w]|(\\\$))*/,
+    identifier_dollar_escaped: (_) => /[a-zA-Z_]\w*/,
 
     _unused_escape_sequence: (_) =>
       token.immediate(
