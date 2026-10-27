@@ -728,7 +728,8 @@ module.exports = grammar({
             "'",
             $.template_chars_raw_slash,
             $._unused_escape_sequence,
-            token.nonkeyword("$"),
+            $._sub_string_test,
+            "$",
           ),
         ),
         '"',
@@ -743,7 +744,8 @@ module.exports = grammar({
             '"',
             $.template_chars_raw_slash,
             $._unused_escape_sequence,
-            token.nonkeyword("$"),
+            $._sub_string_test,
+            "$",
           ),
         ),
         "'",
@@ -760,7 +762,8 @@ module.exports = grammar({
               $.template_chars_raw_slash,
               '"',
               $._unused_escape_sequence,
-              token.nonkeyword("$"),
+              $._sub_string_test,
+              "$",
             ),
           ),
           '"""',
@@ -778,7 +781,8 @@ module.exports = grammar({
               "'",
               $.template_chars_raw_slash,
               $._unused_escape_sequence,
-              token.nonkeyword("$"),
+              $._sub_string_test,
+              "$",
             ),
           ),
           "'''",
@@ -787,16 +791,16 @@ module.exports = grammar({
 
     template_substitution: ($) =>
       seq(
-        token.nonkeyword("$"),
+        "$",
         choice(
           seq("{", $._expression, "}"),
           $.identifier_dollar_escaped,
         ),
       ),
 
-    _sub_string_test: (_) => token(seq("$", /[^a-zA-Z_{'"$\\\n\r]/)),
+    _sub_string_test: (_) => seq("$", /[^a-zA-Z_{]/),
 
-    identifier_dollar_escaped: (_) => token.nonkeyword(token.immediate(/[a-zA-Z_]\w*/)),
+    identifier_dollar_escaped: (_) => /[a-zA-Z_]\w*/,
 
     _unused_escape_sequence: (_) => escapeSequence(/[^xu]/),
 

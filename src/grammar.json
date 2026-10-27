@@ -2804,11 +2804,12 @@
                 "name": "_unused_escape_sequence"
               },
               {
-                "type": "NONKEYWORD_TOKEN",
-                "content": {
-                  "type": "STRING",
-                  "value": "$"
-                }
+                "type": "SYMBOL",
+                "name": "_sub_string_test"
+              },
+              {
+                "type": "STRING",
+                "value": "$"
               }
             ]
           }
@@ -2848,11 +2849,12 @@
                 "name": "_unused_escape_sequence"
               },
               {
-                "type": "NONKEYWORD_TOKEN",
-                "content": {
-                  "type": "STRING",
-                  "value": "$"
-                }
+                "type": "SYMBOL",
+                "name": "_sub_string_test"
+              },
+              {
+                "type": "STRING",
+                "value": "$"
               }
             ]
           }
@@ -2899,11 +2901,12 @@
                   "name": "_unused_escape_sequence"
                 },
                 {
-                  "type": "NONKEYWORD_TOKEN",
-                  "content": {
-                    "type": "STRING",
-                    "value": "$"
-                  }
+                  "type": "SYMBOL",
+                  "name": "_sub_string_test"
+                },
+                {
+                  "type": "STRING",
+                  "value": "$"
                 }
               ]
             }
@@ -2951,11 +2954,12 @@
                   "name": "_unused_escape_sequence"
                 },
                 {
-                  "type": "NONKEYWORD_TOKEN",
-                  "content": {
-                    "type": "STRING",
-                    "value": "$"
-                  }
+                  "type": "SYMBOL",
+                  "name": "_sub_string_test"
+                },
+                {
+                  "type": "STRING",
+                  "value": "$"
                 }
               ]
             }
@@ -2971,11 +2975,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "NONKEYWORD_TOKEN",
-          "content": {
-            "type": "STRING",
-            "value": "$"
-          }
+          "type": "STRING",
+          "value": "$"
         },
         {
           "type": "CHOICE",
@@ -3006,30 +3007,21 @@
       ]
     },
     "_sub_string_test": {
-      "type": "TOKEN",
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "$"
-          },
-          {
-            "type": "PATTERN",
-            "value": "[^a-zA-Z_{'\"$\\\\\\n\\r]"
-          }
-        ]
-      }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "$"
+        },
+        {
+          "type": "PATTERN",
+          "value": "[^a-zA-Z_{]"
+        }
+      ]
     },
     "identifier_dollar_escaped": {
-      "type": "NONKEYWORD_TOKEN",
-      "content": {
-        "type": "IMMEDIATE_TOKEN",
-        "content": {
-          "type": "PATTERN",
-          "value": "[a-zA-Z_]\\w*"
-        }
-      }
+      "type": "PATTERN",
+      "value": "[a-zA-Z_]\\w*"
     },
     "_unused_escape_sequence": {
       "type": "IMMEDIATE_TOKEN",

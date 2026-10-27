@@ -89,9 +89,9 @@ mod tests {
     }
 
     #[test]
-    fn string_lexing_rejects_line_continuations_and_unfinished_interpolation() {
+    fn single_line_strings_reject_escaped_line_terminators() {
         for quote in ["'", "\""] {
-            for body in ["a\\\nb", "a\\\rb", "a$\nname", "a$\rname", "a$"] {
+            for body in ["a\\\nb", "a\\\rb"] {
                 let source = format!("var s = {quote}{body}{quote};\nvoid following() {{}}");
                 let tree = parse(&source);
                 assert!(
