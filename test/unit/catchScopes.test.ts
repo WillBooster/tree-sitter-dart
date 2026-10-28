@@ -103,6 +103,7 @@ testCommand(
     env: { TREE_SITTER_LIBDIR: cache, CARGO_BUILD_JOBS: '1' },
     check: (html) => {
       expect(html.match(/<span class='function'>_<\/span>\(\)/g)).toHaveLength(4);
+      expect(html.match(/<span class='variable'>_<\/span>/g)).toHaveLength(4);
       expect(html).toContain("<span class='variable'>error</span>() == 1");
       expect(html.match(/<span class='function'>error<\/span>\(\)/g)).toHaveLength(2);
     },

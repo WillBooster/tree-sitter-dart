@@ -1,3 +1,7 @@
+((catch_clause (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
 ((class_declaration (primary_constructor)  body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
   (#not-any-of? @_modifier "static" "late"))
 
