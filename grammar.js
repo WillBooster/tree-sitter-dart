@@ -868,7 +868,7 @@ module.exports = grammar({
           "if",
           "(",
           field("condition", $._expression),
-          optional(seq("case", $._guarded_pattern)),
+          optional($.if_case_clause),
           ")",
           field("consequence", $._element),
           optional(seq("else", field("alternative", $._element))),
@@ -1490,12 +1490,14 @@ module.exports = grammar({
           "if",
           "(",
           $._expression,
-          optional(seq("case", $._guarded_pattern)),
+          optional($.if_case_clause),
           ")",
           field("consequence", $._statement),
           optional(seq("else", field("alternative", $._statement))),
         ),
       ),
+
+    if_case_clause: ($) => seq("case", $._guarded_pattern),
 
     for_statement: ($) =>
       seq(

@@ -122,12 +122,13 @@ void main() {
       (block
         (if_statement
           (identifier)
-          (list_pattern
-            (variable_pattern
-              (type
-                (type_identifier))
-              name: (identifier))
-            (rest_pattern))
+          (if_case_clause
+            (list_pattern
+              (variable_pattern
+                (type
+                  (type_identifier))
+                name: (identifier))
+              (rest_pattern)))
           consequence: (block
             (expression_statement
               (call_expression
@@ -203,13 +204,14 @@ void f(x) {
       (block
         (if_statement
           (identifier)
-          (constant_pattern
-            (record_field
-              (decimal_integer_literal))
-            (record_field
-              (decimal_integer_literal))
-            (record_field
-              (decimal_integer_literal)))
+          (if_case_clause
+            (constant_pattern
+              (record_field
+                (decimal_integer_literal))
+              (record_field
+                (decimal_integer_literal))
+              (record_field
+                (decimal_integer_literal))))
           consequence: (block))))))
 
 ================================================================================

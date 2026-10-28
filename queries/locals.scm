@@ -1,3 +1,15 @@
+[
+  (if_statement (if_case_clause) consequence: (_) @local.scope)
+  (if_element (if_case_clause) consequence: (_) @local.scope)
+]
+
+(if_case_clause) @local.scope
+
+[
+  (if_statement (if_case_clause) @local.scope-source consequence: (_) @local.scope-import)
+  (if_element (if_case_clause) @local.scope-source consequence: (_) @local.scope-import)
+]
+
 ((class_declaration (primary_constructor)  body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
   (#not-any-of? @_modifier "static" "late"))
 
