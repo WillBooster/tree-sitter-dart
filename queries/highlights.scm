@@ -110,6 +110,13 @@
       (null_aware_member_expression property: (identifier) @function.method.call)
     ]))
 
+(call_expression
+  function: (static_member_shorthand (identifier) @function.method.call))
+
+(call_expression
+  function: (instantiation_expression
+    function: (static_member_shorthand (identifier) @function.method.call)))
+
 (cascade_call_expression
   property: (identifier) @function.method.call)
 

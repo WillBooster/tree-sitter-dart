@@ -76,6 +76,7 @@
   (cascade_member_expression property: (identifier) @local.scope)
   (cascade_null_aware_member_expression property: (identifier) @local.scope)
   (cascade_call_expression property: (identifier) @local.scope)
+  (static_member_shorthand (identifier) @local.scope)
   (label (identifier) @local.scope)
   (annotation name: (identifier) @local.scope)
   (annotation name: (qualified) @local.scope)
