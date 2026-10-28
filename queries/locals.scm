@@ -62,12 +62,6 @@
   (for_element value: (_)+ @local.definition-value)
 ] @local.definition-context
 
-(method_declaration
-  signature: (method_signature [
-    (constructor_signature)
-    (factory_constructor_signature)
-  ])) @local.scope
-
 (class_member
   (declaration [
     (constructor_signature)
