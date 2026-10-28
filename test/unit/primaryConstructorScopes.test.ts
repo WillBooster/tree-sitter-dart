@@ -13,6 +13,7 @@ for (const fixture of [
   'primaryParameterScope',
   'primaryFieldScope',
   'primaryGenericFieldScope',
+  'primaryRegionalScope',
   'primaryFactoryScope',
   'primaryStaticScope',
   'primaryLateScope',
@@ -58,6 +59,18 @@ for (const fixture of [
           expect(output.match(/<span class='function'>U<\/span>\(\);/g)).toHaveLength(1);
           expect(output.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(8);
           expect(output.match(/<span class='type parameter'>U<\/span>/g)).toHaveLength(2);
+        } else if (fixture === 'primaryRegionalScope') {
+          expect(output).toContain("forwarded</span> = <span class='variable'>forwarding</span>()");
+          expect(output).toContain("plain</span> = <span class='variable'>ordinary</span>()");
+          expect(output).toContain(
+            "assert(<span class='variable'>forwarding</span>()==2 &amp;&amp; <span class='variable'>ordinary</span>()==3)"
+          );
+          expect(output).toContain(
+            "[forwarded, plain, <span class='function'>forwarding</span>(), <span class='variable'>ordinary</span>()]"
+          );
+          expect(output).toContain(
+            "[<span class='function'>forwarding</span>(), <span class='function'>ordinary</span>()]"
+          );
         } else if (fixture === 'primaryFactoryScope') {
           expect(output.match(/<span class='function'>target<\/span>\(\)/g)).toHaveLength(4);
         } else if (fixture === 'primaryStaticScope') {

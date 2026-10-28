@@ -73,7 +73,7 @@ parser.setLanguage(await Language.load(grammar));
 
 The package also ships `grammar.js`, the queries in `queries/`, and the node types in `src/node-types.json`.
 
-The bundled highlight and locals queries require the WillBooster Rust highlighter or CLI version 15.4.0 or later.
+The bundled highlight and locals queries require the WillBooster Rust highlighter or CLI version 15.5.0 or later.
 Loop bindings become available after the entire iterable expression and stop at the loop boundary.
 Custom highlighters must ignore unconfigured helper captures, preserve later captures from overlapping matches,
 and support `@local.definition-context` with all `@local.definition-value` captures
@@ -81,6 +81,8 @@ for the same context node. Definitions before the combined value range become av
 definitions inside the iterable, such as lambda parameters, retain their own scope.
 Custom highlighters must also link direct bindings from `@local.scope-source` to `@local.scope-import` nodes,
 each captured separately as `@local.scope`. Recipient definitions shadow imported bindings.
+Custom highlighters must also resolve `@local.definition-predeclared` names within `@local.definition-region`
+using the `local.definition-style` property for primary constructor bodies.
 The Web runtime exposes these query captures; consumers implement their own locals resolution.
 
 In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
@@ -89,7 +91,7 @@ fuzzed with:
 
 ```toml
 [dependencies]
-tree-sitter = { package = "willbooster-tree-sitter", version = "15.4.0" }
+tree-sitter = { package = "willbooster-tree-sitter", version = "15.5.0" }
 tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "15" }
 ```
 
