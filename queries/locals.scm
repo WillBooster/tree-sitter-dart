@@ -5,17 +5,11 @@
 ((class_declaration (primary_constructor)  body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
   (#not-any-of? @_modifier "static" "late"))
 
-((class_declaration (primary_constructor)  body: (class_body (class_member (declaration ["static" "late"]* @_modifier (static_final_declaration_list (static_final_declaration value: (_) @local.scope))))))
-  (#not-any-of? @_modifier "static" "late"))
-
 (enum_declaration (primary_constructor) body: (enum_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature)))) @local.scope))
 
 (enum_declaration (primary_constructor) body: (enum_body (class_member (declaration (primary_constructor_body_signature))) @local.scope))
 
 ((enum_declaration (primary_constructor)  body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
-  (#not-any-of? @_modifier "static" "late"))
-
-((enum_declaration (primary_constructor)  body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (static_final_declaration_list (static_final_declaration value: (_) @local.scope))))))
   (#not-any-of? @_modifier "static" "late"))
 
 (primary_constructor) @local.scope
@@ -355,17 +349,11 @@
 ((class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
   (#not-any-of? @_modifier "static" "late"))
 
-((class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration ["static" "late"]* @_modifier (static_final_declaration_list (static_final_declaration value: (_) @local.scope-import))))))
-  (#not-any-of? @_modifier "static" "late"))
-
 (enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature)))) @local.scope-import))
 
 (enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (declaration (primary_constructor_body_signature))) @local.scope-import))
 
 ((enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
-  (#not-any-of? @_modifier "static" "late"))
-
-((enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (static_final_declaration_list (static_final_declaration value: (_) @local.scope-import))))))
   (#not-any-of? @_modifier "static" "late"))
 
 ((class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"] (identifier) @local.definition))))
