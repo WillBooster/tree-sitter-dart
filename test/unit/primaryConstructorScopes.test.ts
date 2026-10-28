@@ -57,8 +57,8 @@ for (const fixture of [
           expect(output.match(/<span class='variable'>callback<\/span>\([123]\)/g)).toHaveLength(6);
           expect(output.match(/<span class='function'>T<\/span>\(\);/g)).toHaveLength(5);
           expect(output.match(/<span class='function'>U<\/span>\(\);/g)).toHaveLength(1);
-          expect(output.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(8);
-          expect(output.match(/<span class='type parameter'>U<\/span>/g)).toHaveLength(2);
+          expect(output.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(12);
+          expect(output.match(/<span class='type parameter'>U<\/span>/g)).toHaveLength(3);
         } else if (fixture === 'primaryRegionalScope') {
           expect(output).toContain("forwarded</span> = <span class='variable'>forwarding</span>()");
           expect(output).toContain("plain</span> = <span class='variable'>ordinary</span>()");

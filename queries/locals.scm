@@ -8,9 +8,9 @@
 
 ; locals.scm - Dart scope and variable resolution queries
 
-; ============================================================================
+; =====================================================================
 ; Scopes
-; ============================================================================
+; =====================================================================
 
 [
   (function_declaration)
@@ -117,9 +117,9 @@
   (#eq? @_selector @local.scope)
   (#set! local.scope-inherits false))
 
-; ============================================================================
+; =====================================================================
 ; Definitions
-; ============================================================================
+; =====================================================================
 
 ; Variables
 ([
@@ -187,9 +187,9 @@
   name: (identifier) @local.definition)
   (#not-eq? @local.definition "_"))
 
-; ============================================================================
+; =====================================================================
 ; References
-; ============================================================================
+; =====================================================================
 
 (identifier) @local.reference
 (type_identifier) @local.reference
@@ -435,3 +435,68 @@
         body: (function_body) @local.definition-region))))
   (#not-any-of? @_field "final" "var")
   (#set! local.definition-style "variable.parameter"))
+
+((class_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((mixin_application_class
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((mixin_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((enum_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_type_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((type_alias
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_signature
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_type
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_expression
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((constructor_param
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((super_formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))

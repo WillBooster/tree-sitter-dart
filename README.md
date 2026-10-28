@@ -81,8 +81,8 @@ for the same context node. Definitions before the combined value range become av
 definitions inside the iterable, such as lambda parameters, retain their own scope.
 Custom highlighters must also link direct bindings from `@local.scope-source` to `@local.scope-import` nodes,
 each captured separately as `@local.scope`. Recipient definitions shadow imported bindings.
-Custom highlighters must also resolve `@local.definition-predeclared` names within `@local.definition-region`
-using the `local.definition-style` property for primary constructor bodies.
+Custom highlighters must resolve `@local.definition-predeclared` names throughout their `@local.definition-region`
+using the `local.definition-style` property. Declaration syntax captures retain their own roles.
 The Web runtime exposes these query captures; consumers implement their own locals resolution.
 
 In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
