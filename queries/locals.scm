@@ -181,4 +181,5 @@
 
 (try_statement
   (catch_clause) @local.scope-source
+  . (comment)*
   . (block) @local.scope-import)
