@@ -1,4 +1,5 @@
 extension CallableTrace on StackTrace { int call() => 1; }
+extension CallableException on Object { int call() => 1; }
 int target()=>9;
 int trace()=>8;
 int other()=>7;
@@ -20,6 +21,6 @@ void nested(){
  }target();other();trace();
 }
 void untyped(){
- try{throw 1;}catch(target,trace) /* untyped */ {print(target);trace();}target();trace();
+ try{throw 1;}catch(target,trace) /* untyped */ {target();trace();}target();trace();
 }
 void main(){basic();nested();untyped();}

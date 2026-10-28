@@ -57,6 +57,8 @@
 
 (function_type) @local.scope
 
+(type_alias) @local.scope
+
 [
   (class_declaration)
   (mixin_declaration)
@@ -158,8 +160,9 @@
 (extension_declaration
   name: (identifier) @local.definition)
 
-(type_alias
+((type_alias
   (type_identifier) @local.definition)
+  (#set! local.definition-scope "parent"))
 
 (type_parameter
   (type_identifier) @local.definition)

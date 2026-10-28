@@ -67,7 +67,7 @@ testCommand(
             'function',
           ],
         ],
-        ['untyped', 'main', ['variable', 'variable', 'variable', 'function', 'function']],
+        ['untyped', 'main', ['variable', 'variable', 'variable', 'variable', 'function', 'function']],
       ];
       for (const [start, end, expected] of cases) {
         const section = output
