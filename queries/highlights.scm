@@ -27,10 +27,6 @@
 (template_chars_double_single) @string
 (template_chars_raw_slash) @string
 (escape_sequence) @string.escape
-(template_substitution
-  "$" @punctuation.special
-  "{" @punctuation.special
-  "}" @punctuation.special)
 
 (symbol_literal) @string.special.symbol
 
@@ -88,6 +84,8 @@
   (cascade_member_expression)
   (cascade_null_aware_member_expression)
 ] property: (identifier) @property
+
+(cascade_selector (identifier) @property)
 
 ; Function calls (non-method)
 (call_expression
@@ -180,21 +178,12 @@
   (identifier) @variable)
 
 ; ============================================================================
-; Annotations
-; ============================================================================
-
-(annotation
-  "@" @attribute
-  name: (identifier) @attribute)
-
-; ============================================================================
 ; Operators
 ; ============================================================================
 
 (relational_operator) @operator
 (prefix_operator) @operator
 (negate_operator) @operator
-(is_operator) @keyword.operator
 (binary_operator) @operator
 
 [
@@ -339,3 +328,66 @@
 
 ((identifier) @variable.builtin
   (#eq? @variable.builtin "super"))
+
+(template_substitution
+  "$" @punctuation.special
+  "{" @punctuation.special
+  "}" @punctuation.special)
+(annotation "@" @attribute)
+(annotation name: (identifier) @attribute)
+(annotation name: (qualified [(type_identifier) (identifier)] @attribute))
+(annotation (type_arguments) (identifier) @attribute)
+(is_operator ["is" "!"] @keyword.operator)
+
+(type_cast "as" @keyword.operator)
+(cast_pattern "as" @keyword.operator)
+
+((class_declaration
+  name: (identifier) @_class
+  body: (class_body
+    (class_member [
+      (method_declaration
+        signature: (method_signature (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature))
+      (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature)
+    ])))
+  (#not-eq? @_class @function.method)
+  (#not-match? @_signature "^new\\b"))
+
+((extension_type_declaration
+  name: (identifier) @_class
+  body: (class_body
+    (class_member [
+      (method_declaration
+        signature: (method_signature (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature))
+      (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature)
+    ])))
+  (#not-eq? @_class @function.method)
+  (#not-match? @_signature "^new\\b"))
+
+((enum_declaration
+  name: (identifier) @_class
+  body: (enum_body
+    (class_member [
+      (method_declaration
+        signature: (method_signature (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature))
+      (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)) @_signature)
+    ])))
+  (#not-eq? @_class @function.method)
+  (#not-match? @_signature "^new\\b"))
+
+(mixin_declaration
+  body: (class_body
+    (class_member [
+      (method_declaration
+        signature: (method_signature (constructor_signature . (identifier) @function.method . (formal_parameter_list))))
+      (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)))
+    ])))
+
+(extension_declaration
+  body: (extension_body
+    (class_member [
+      (method_declaration
+        signature: (method_signature (constructor_signature . (identifier) @function.method . (formal_parameter_list))))
+      (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)))
+    ])))
+
