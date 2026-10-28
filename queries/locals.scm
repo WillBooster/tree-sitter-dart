@@ -184,6 +184,11 @@
     (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
   (#set! local.definition-style "type.parameter"))
 
+((mixin_application_class
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
 ((mixin_declaration
   (type_parameters
     (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region

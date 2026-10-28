@@ -2,6 +2,8 @@ void T() {}
 void U() {}
 T identity<T>(T value) => value;
 class Bound<X extends U, U extends num> {}
+mixin M {}
+class Application<A extends U, U extends num> = Object with M;
 void callbacks(T callback<T>(U nested<U>(U value), T value)) { T(); U(); }
 T Function<T>(T value) modern = identity;
 class Parent {

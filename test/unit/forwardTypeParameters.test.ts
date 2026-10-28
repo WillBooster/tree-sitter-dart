@@ -33,7 +33,7 @@ for (const fixture of ['forwardTypeParameters', 'forwardAliasTypes', 'forwardCal
         if (fixture === 'forwardTypeParameters') {
           expect(output.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(15);
           expect(output.match(/<span class='function'>T<\/span>/g)).toHaveLength(5);
-          expect(output.match(/<span class='type parameter'>U<\/span>/g)).toHaveLength(5);
+          expect(output.match(/<span class='type parameter'>U<\/span>/g)).toHaveLength(7);
           expect(output.match(/<span class='function'>U<\/span>/g)).toHaveLength(3);
         } else if (fixture === 'forwardAliasTypes') {
           expect(output.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(6);
