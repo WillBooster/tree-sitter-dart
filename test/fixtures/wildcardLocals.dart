@@ -13,6 +13,19 @@ class Primary(int _) {
   final value = _();
   this { _(); }
 }
+class ForwardBase { ForwardBase(int Function() _); }
+class Forwarded extends ForwardBase { Forwarded(super._) { _(); } }
+class PrimaryForwarded(super._) extends ForwardBase {
+  final value = _();
+  this : assert(_() == 7) { _(); }
+}
+class FieldBase {
+  final int Function() _;
+  FieldBase(this._);
+}
+class FieldForwarded extends FieldBase {
+  FieldForwarded(super._) { assert(_() == 7); assert(this._() == 9); }
+}
 class Declared(final int Function() _) { int use() => _(); }
 class Initializing(this._) {
   final int Function() _;
@@ -32,6 +45,9 @@ void main() {
   Ordinary(9)..value = 9;
   Ordinary(9) + 9;
   Primary(9);
+  Forwarded(() => 9);
+  assert(PrimaryForwarded(() => 9).value == 7);
+  FieldForwarded(() => 9);
   assert(Declared(() => 9).use() == 9);
   assert(Initializing(() => 9).use() == 9);
   assert(Representation(() => 9).use() == 9);

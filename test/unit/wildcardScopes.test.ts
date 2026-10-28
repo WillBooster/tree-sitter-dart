@@ -31,8 +31,9 @@ for (const fixture of ['wildcardLocals', 'wildcardLocalFunctions', 'wildcardType
       env: { TREE_SITTER_LIBDIR: cache, CARGO_BUILD_JOBS: '1' },
       check: (html) => {
         if (fixture === 'wildcardLocals') {
-          expect(html.match(/<span class='function'>_<\/span>\(\)/g)).toHaveLength(13);
+          expect(html.match(/<span class='function'>_<\/span>\(\)/g)).toHaveLength(18);
           expect(html.match(/<span class='variable'>_<\/span>\(\)/g)).toHaveLength(3);
+          expect(html.match(/super\.<span class='variable'>_<\/span>/g)).toHaveLength(3);
           expect(html).toContain("var <span class='variable'>_</span> = 9;");
           expect(html.match(/<span class='type parameter'>_<\/span>/g)).toHaveLength(1);
           expect(html.match(/<span class='type parameter'>T<\/span>/g)).toHaveLength(3);

@@ -1,3 +1,7 @@
+((super_formal_parameter (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
 ((initialized_variable_definition name: (identifier) @local.scope)
   (#eq? @local.scope "_")
   (#set! local.scope-inherits false))
@@ -113,6 +117,11 @@
 ((enum_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.scope)))))
   (#eq? @local.scope "_")
   (#not-any-of? @_field "final" "var")
+  (#set! local.scope-inherits false))
+
+
+((catch_clause (identifier) @local.scope)
+  (#eq? @local.scope "_")
   (#set! local.scope-inherits false))
 
 [
@@ -271,11 +280,13 @@
 (static_final_declaration
   (identifier) @local.definition)
 
-(catch_clause
+((catch_clause
   exception: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
-(catch_clause
+((catch_clause
   stack_trace: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
 ((function_signature
   name: (identifier) @local.definition)
@@ -330,10 +341,15 @@
 (formal_parameter_list
   [
     (formal_parameter (constructor_param (identifier) @local.definition))
-    (formal_parameter (super_formal_parameter (identifier) @local.definition))
     (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
+  ])
+
+((formal_parameter_list
+  [
+    (formal_parameter (super_formal_parameter (identifier) @local.definition))
     (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
   ])
+  (#not-eq? @local.definition "_"))
 
 ((class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
   (#not-any-of? @_modifier "static" "late"))
@@ -514,3 +530,8 @@
     (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
   (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
+
+(try_statement
+  (catch_clause) @local.scope-source
+  . (comment)*
+  . (block) @local.scope-import)
