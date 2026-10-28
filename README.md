@@ -79,6 +79,8 @@ Custom highlighters must ignore unconfigured helper captures, preserve later cap
 and support `@local.definition-context` with all `@local.definition-value` captures
 for the same context node. Definitions before the combined value range become available after it;
 definitions inside the iterable, such as lambda parameters, retain their own scope.
+Custom highlighters must also link direct bindings from `@local.scope-source` to `@local.scope-import` nodes,
+each captured separately as `@local.scope`. Recipient definitions shadow imported bindings.
 Custom highlighters must resolve `@local.definition-predeclared` names throughout their `@local.definition-region`
 using the `local.definition-style` property. Declaration syntax captures retain their own roles.
 The Web runtime exposes these query captures; consumers implement their own locals resolution.
