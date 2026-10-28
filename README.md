@@ -20,6 +20,8 @@ version 15.0.0 or later in the 15.x series; upstream's runtime rejects it, and t
 
 Known differences from upstream's 0.2.0 parser include:
 
+- If-case statements and collection elements expose an `if_case_clause` containing `case`, the complete pattern, and its optional guard. Consequence and alternative fields remain on the containing if node.
+
 - Arrow function bodies include trailing selectors. For `(x) => a.b(x)`, the call belongs inside the
   `function_expression_body`; upstream attaches it to the arrow function instead. Nested arrow functions follow the
   same rule. Block-bodied function literals still support immediate calls and member access. Public node names and
@@ -92,7 +94,7 @@ fuzzed with:
 ```toml
 [dependencies]
 tree-sitter = { package = "willbooster-tree-sitter", version = "15.5.0" }
-tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "15" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "16" }
 ```
 
 ```rust
