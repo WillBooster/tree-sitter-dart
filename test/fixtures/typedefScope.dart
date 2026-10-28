@@ -4,6 +4,7 @@ void hidden() {}
 void T() {}
 typedef void Legacy(int target);
 typedef void Callback(void cb(int hidden));
+typedef List<List<T>> Deep<T>(T value);
 typedef Modern<T> = T Function(T value);
 typedef T LegacyGeneric<T>(T value);
 typedef void Nested(void cb(void nested(int hidden)));

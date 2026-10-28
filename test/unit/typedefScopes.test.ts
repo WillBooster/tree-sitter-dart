@@ -36,6 +36,12 @@ testCommand(
       expect(output).toContain(
         "Modern&lt;<span class='type parameter'>T</span>&gt; = <span class='type parameter'>T</span> Function(<span class='type parameter'>T</span>"
       );
+      expect(output).toContain(
+        "List&lt;List&lt;<span class='type parameter'>T</span>&gt;&gt; Deep&lt;<span class='type parameter'>T</span>&gt;(<span class='type parameter'>T</span>"
+      );
+      expect(output).toContain(
+        "typedef <span class='type parameter'>T</span> LegacyGeneric&lt;<span class='type parameter'>T</span>&gt;(<span class='type parameter'>T</span>"
+      );
     },
   }
 );
