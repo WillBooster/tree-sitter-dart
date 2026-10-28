@@ -1,0 +1,10 @@
+{
+  "parser-directories": [],
+  "theme": {
+    "function": 1,
+    "function.call": 2,
+    "variable": 3,
+    "property": 4,
+    "keyword": 5
+  }
+}

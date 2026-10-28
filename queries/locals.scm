@@ -62,11 +62,53 @@
   (for_element value: (_)+ @local.definition-value)
 ] @local.definition-context
 
+(method_declaration
+  signature: (method_signature [
+    (constructor_signature)
+    (factory_constructor_signature)
+  ])) @local.scope
+
+(class_member
+  (declaration [
+    (constructor_signature)
+    (constant_constructor_signature)
+    (factory_constructor_signature)
+    (redirecting_factory_constructor_signature)
+  ])) @local.scope
+
+([
+  (member_expression property: (identifier) @local.scope)
+  (null_aware_member_expression property: (identifier) @local.scope)
+  (cascade_member_expression property: (identifier) @local.scope)
+  (cascade_null_aware_member_expression property: (identifier) @local.scope)
+  (cascade_call_expression property: (identifier) @local.scope)
+  (label (identifier) @local.scope)
+  (annotation name: (identifier) @local.scope)
+  (annotation name: (qualified) @local.scope)
+  (annotation (type_arguments) (identifier) @local.scope)
+  (constructor_signature (identifier) @local.scope)
+  (constant_constructor_signature (identifier) @local.scope)
+  (factory_constructor_signature (identifier) @local.scope)
+  (redirecting_factory_constructor_signature (identifier) @local.scope)
+  (primary_constructor name: (identifier) @local.scope)
+]
+  (#set! local.scope-inherits false))
+
+((cascade_selector (identifier) @local.scope) @_selector
+  (#eq? @_selector @local.scope)
+  (#set! local.scope-inherits false))
+
 ; ============================================================================
 ; Definitions
 ; ============================================================================
 
 ; Variables
+([
+  (for_statement name: (identifier) @local.definition)
+  (for_element name: (identifier) @local.definition)
+]
+  (#not-eq? @local.definition "_"))
+
 (initialized_variable_definition
   name: (identifier) @local.definition)
 
