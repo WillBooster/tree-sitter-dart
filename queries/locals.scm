@@ -178,3 +178,63 @@
 
 (identifier) @local.reference
 (type_identifier) @local.reference
+
+((class_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((mixin_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((enum_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_type_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((type_alias
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_signature
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_type
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_expression
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((constructor_param
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((super_formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
