@@ -392,3 +392,16 @@
       (declaration (constructor_signature . (identifier) @function.method . (formal_parameter_list)))
     ])))
 
+([
+  (for_statement name: (identifier) @variable)
+  (for_element name: (identifier) @variable)
+]
+  (#not-eq? @variable "_"))
+
+(record_field (label (identifier) @property))
+(record_literal (label (identifier) @property))
+(record_pattern (label (identifier) @property))
+(object_pattern (label (identifier) @property))
+(constant_pattern (label (identifier) @property))
+
+"rethrow" @keyword

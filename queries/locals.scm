@@ -67,6 +67,12 @@
 ; ============================================================================
 
 ; Variables
+([
+  (for_statement name: (identifier) @local.definition)
+  (for_element name: (identifier) @local.definition)
+]
+  (#not-eq? @local.definition "_"))
+
 (initialized_variable_definition
   name: (identifier) @local.definition)
 
