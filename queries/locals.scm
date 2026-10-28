@@ -57,6 +57,7 @@
   (catch_clause)
   (finally_clause)
   (switch_statement_case)
+  (switch_expression_case)
 ] @local.scope
 
 [
@@ -78,6 +79,7 @@
   (cascade_member_expression property: (identifier) @local.scope)
   (cascade_null_aware_member_expression property: (identifier) @local.scope)
   (cascade_call_expression property: (identifier) @local.scope)
+  (static_member_shorthand (identifier) @local.scope)
   (label (identifier) @local.scope)
   (annotation name: (identifier) @local.scope)
   (annotation name: (qualified) @local.scope)
@@ -179,3 +181,68 @@
 
 (identifier) @local.reference
 (type_identifier) @local.reference
+
+((class_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((mixin_application_class
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((mixin_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((enum_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((extension_type_declaration
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((type_alias
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_signature
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_type
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((function_expression
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((constructor_param
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
+
+((super_formal_parameter
+  (type_parameters
+    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+  (#set! local.definition-style "type.parameter"))
