@@ -172,145 +172,15 @@
 (identifier) @local.reference
 (type_identifier) @local.reference
 
-(function_expression
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(function_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(setter_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(constructor_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(constant_constructor_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(factory_constructor_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(redirecting_factory_constructor_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(operator_signature
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(type_alias
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(formal_parameter
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(constructor_param
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-(super_formal_parameter
-  (formal_parameter_list
-    [
-      (formal_parameter (identifier) @local.definition)
-      (formal_parameter (constructor_param (identifier) @local.definition))
-      (formal_parameter (super_formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (identifier) @local.definition))
-      (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
-      (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
-    ]))
-
-((class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.definition)))) (#not-any-of? @_field "final" "var"))
-
-((class_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.definition))))) (#not-any-of? @_field "final" "var"))
-
-((enum_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.definition)))) (#not-any-of? @_field "final" "var"))
-
-((enum_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.definition))))) (#not-any-of? @_field "final" "var"))
+(formal_parameter_list
+  [
+    (formal_parameter (identifier) @local.definition)
+    (formal_parameter (constructor_param (identifier) @local.definition))
+    (formal_parameter (super_formal_parameter (identifier) @local.definition))
+    (optional_formal_parameters (formal_parameter (identifier) @local.definition))
+    (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
+    (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
+  ])
 
 ((class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
   (#not-any-of? @_modifier "static" "late"))
@@ -353,10 +223,6 @@
 
 ((extension_type_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition))))))
   (#set! local.definition-scope "parent"))
-
-(class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter (super_formal_parameter (identifier) @local.definition)))))
-
-(class_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition))))))
 
 (class_declaration (primary_constructor) body: (class_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope))))))
 
