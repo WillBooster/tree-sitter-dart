@@ -178,3 +178,7 @@
 
 (identifier) @local.reference
 (type_identifier) @local.reference
+
+(try_statement
+  (catch_clause) @local.scope-source
+  . (block) @local.scope-import)
