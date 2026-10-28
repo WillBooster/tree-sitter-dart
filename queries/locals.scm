@@ -50,13 +50,16 @@
   (annotation name: (identifier) @local.scope)
   (annotation name: (qualified) @local.scope)
   (annotation (type_arguments) (identifier) @local.scope)
-  (cascade_selector (identifier) @local.scope)
   (constructor_signature (identifier) @local.scope)
   (constant_constructor_signature (identifier) @local.scope)
   (factory_constructor_signature (identifier) @local.scope)
   (redirecting_factory_constructor_signature (identifier) @local.scope)
   (primary_constructor name: (identifier) @local.scope)
 ]
+  (#set! local.scope-inherits false))
+
+((cascade_selector (identifier) @local.scope) @_selector
+  (#eq? @_selector @local.scope)
   (#set! local.scope-inherits false))
 
 ; ============================================================================

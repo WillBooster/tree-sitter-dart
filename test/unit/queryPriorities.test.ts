@@ -82,6 +82,8 @@ testCommand(
       expect(explicit).toContain("<span class='keyword'>new</span> <span class='constructor'>named</span>");
       expect(explicit).toContain("<span class='function'>newly</span>");
       expect(output).not.toContain("<span class='constructor'><span class='function'>");
+      expect(output).not.toContain("<span class='property'>index</span>");
+      expect(output).toContain("values..<span class='property'>length</span>");
       const unrelated = lines.filter((line) => line.includes("<span class='function'>unrelated</span>"));
       expect(unrelated).toHaveLength(2);
       expect(unrelated[0]).toContain("<span class='function'>value</span>");

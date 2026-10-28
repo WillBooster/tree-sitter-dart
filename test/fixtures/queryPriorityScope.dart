@@ -58,3 +58,9 @@ enum State { ready; bare() {} }
 class Adjacent { Adjacent(int target){}Adjacent.named(){target();} }
 
 class Explicit { new(); new named(); bare() {} newly() {} }
+
+void indexed(int index, List<int> values, List<int>? maybe) {
+  values..[index];
+  maybe?..[index];
+  values..length;
+}

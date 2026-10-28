@@ -85,7 +85,8 @@
   (cascade_null_aware_member_expression)
 ] property: (identifier) @property
 
-(cascade_selector (identifier) @property)
+((cascade_selector (identifier) @property) @_selector
+  (#eq? @_selector @property))
 
 ; Function calls (non-method)
 (call_expression
