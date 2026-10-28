@@ -43,7 +43,7 @@ pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
 
 /// The local-variable syntax highlighting query for this language.
 ///
-/// Use with [`HIGHLIGHTS_QUERY`] and the WillBooster highlighter version 15.3.1 or later.
+/// Use with [`HIGHLIGHTS_QUERY`] and the WillBooster highlighter version 15.4.0 or later for scope imports.
 pub const LOCALS_QUERY: &str = include_str!("../../queries/locals.scm");
 
 /// The symbol tagging query for this language.

@@ -1,3 +1,15 @@
+[
+  (if_statement (if_case_clause) consequence: (_) @local.scope)
+  (if_element (if_case_clause) consequence: (_) @local.scope)
+]
+
+(if_case_clause) @local.scope
+
+[
+  (if_statement (if_case_clause) @local.scope-source consequence: (_) @local.scope-import)
+  (if_element (if_case_clause) @local.scope-source consequence: (_) @local.scope-import)
+]
+
 ; locals.scm - Dart scope and variable resolution queries
 
 ; ============================================================================

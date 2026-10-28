@@ -20,6 +20,8 @@ version 15.0.0 or later in the 15.x series; upstream's runtime rejects it, and t
 
 Known differences from upstream's 0.2.0 parser include:
 
+- If-case statements and collection elements expose an `if_case_clause` containing `case`, the complete pattern, and its optional guard. Consequence and alternative fields remain on the containing if node.
+
 - Arrow function bodies include trailing selectors. For `(x) => a.b(x)`, the call belongs inside the
   `function_expression_body`; upstream attaches it to the arrow function instead. Nested arrow functions follow the
   same rule. Block-bodied function literals still support immediate calls and member access. Public node names and
@@ -73,12 +75,14 @@ parser.setLanguage(await Language.load(grammar));
 
 The package also ships `grammar.js`, the queries in `queries/`, and the node types in `src/node-types.json`.
 
-The bundled highlight and locals queries require the WillBooster Rust highlighter or CLI version 15.3.1 or later.
+The bundled highlight and locals queries require the WillBooster Rust highlighter or CLI version 15.4.0 or later.
 Loop bindings become available after the entire iterable expression and stop at the loop boundary.
 Custom highlighters must ignore unconfigured helper captures, preserve later captures from overlapping matches,
 and support `@local.definition-context` with all `@local.definition-value` captures
 for the same context node. Definitions before the combined value range become available after it;
 definitions inside the iterable, such as lambda parameters, retain their own scope.
+Custom highlighters must also link direct bindings from `@local.scope-source` to `@local.scope-import` nodes,
+each captured separately as `@local.scope`. Recipient definitions shadow imported bindings.
 The Web runtime exposes these query captures; consumers implement their own locals resolution.
 
 In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
@@ -87,8 +91,8 @@ fuzzed with:
 
 ```toml
 [dependencies]
-tree-sitter = { package = "willbooster-tree-sitter", version = "15.3.1" }
-tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "15" }
+tree-sitter = { package = "willbooster-tree-sitter", version = "15.4.0" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "16" }
 ```
 
 ```rust
