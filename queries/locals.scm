@@ -55,6 +55,7 @@
   (catch_clause)
   (finally_clause)
   (switch_statement_case)
+  (switch_expression_case)
 ] @local.scope
 
 [
