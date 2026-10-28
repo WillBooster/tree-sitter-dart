@@ -81,3 +81,30 @@ testCommand(
     },
   }
 );
+
+testCommand(
+  'wildcard catch parameters leave outer names available in the handler',
+  [
+    'script/tree-sitter',
+    'highlight',
+    '--grammar-path',
+    '.',
+    '--html',
+    '--layout',
+    'fragment',
+    '--style',
+    'minimal',
+    '--config-path',
+    'test/fixtures/callableHighlightConfig.json',
+    'test/fixtures/catchWildcardScope.dart',
+  ],
+  120_000,
+  {
+    env: { TREE_SITTER_LIBDIR: cache, CARGO_BUILD_JOBS: '1' },
+    check: (html) => {
+      expect(html.match(/<span class='function'>_<\/span>\(\)/g)).toHaveLength(4);
+      expect(html).toContain("<span class='variable'>error</span>() == 1");
+      expect(html.match(/<span class='function'>error<\/span>\(\)/g)).toHaveLength(2);
+    },
+  }
+);
