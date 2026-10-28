@@ -174,6 +174,12 @@
 (super_formal_parameter
   (identifier) @variable.parameter)
 
+(catch_clause
+  exception: (identifier) @variable.parameter)
+
+(catch_clause
+  stack_trace: (identifier) @variable.parameter)
+
 ; Named arguments
 (named_argument
   (label

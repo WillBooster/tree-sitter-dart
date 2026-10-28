@@ -1,3 +1,7 @@
+((catch_clause (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
 [
   (if_statement (if_case_clause) consequence: (_) @local.scope)
   (if_element (if_case_clause) consequence: (_) @local.scope)
@@ -140,11 +144,13 @@
 (static_final_declaration
   (identifier) @local.definition)
 
-(catch_clause
+((catch_clause
   exception: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
-(catch_clause
+((catch_clause
   stack_trace: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
 ((function_signature
   name: (identifier) @local.definition)
@@ -359,3 +365,8 @@
   (type_parameters
     (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
   (#set! local.definition-style "type.parameter"))
+
+(try_statement
+  (catch_clause) @local.scope-source
+  . (comment)*
+  . (block) @local.scope-import)
