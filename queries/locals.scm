@@ -5,6 +5,42 @@
 ; ============================================================================
 
 [
+  (function_declaration)
+  (local_function_declaration)
+  (method_declaration)
+  (getter_declaration)
+  (setter_declaration)
+  (external_function_declaration)
+  (external_getter_declaration)
+  (external_setter_declaration)
+] @local.scope
+
+(class_member
+  (declaration [
+    (function_signature)
+    (getter_signature)
+    (setter_signature)
+    (operator_signature)
+  ])) @local.scope
+
+((formal_parameter
+  (identifier) @local.definition
+  (formal_parameter_list)) @local.scope
+  (#set! local.definition-scope "parent"))
+
+((constructor_param
+  (identifier) @local.definition
+  (formal_parameter_list)) @local.scope
+  (#set! local.definition-scope "parent"))
+
+((super_formal_parameter
+  (identifier) @local.definition
+  (formal_parameter_list)) @local.scope
+  (#set! local.definition-scope "parent"))
+
+(function_type) @local.scope
+
+[
   (class_declaration)
   (mixin_declaration)
   (extension_declaration)
@@ -25,12 +61,6 @@
   (for_statement value: (_)+ @local.definition-value)
   (for_element value: (_)+ @local.definition-value)
 ] @local.definition-context
-
-(method_declaration
-  signature: (method_signature [
-    (constructor_signature)
-    (factory_constructor_signature)
-  ])) @local.scope
 
 (class_member
   (declaration [
@@ -84,13 +114,13 @@
 
 ; Parameters
 (formal_parameter
-  (identifier) @local.definition)
+  (identifier) @local.definition .)
 
 (constructor_param
-  (identifier) @local.definition)
+  (identifier) @local.definition .)
 
 (super_formal_parameter
-  (identifier) @local.definition)
+  (identifier) @local.definition .)
 
 ; Catch variables
 (catch_clause
@@ -100,14 +130,17 @@
   stack_trace: (identifier) @local.definition)
 
 ; Functions
-(function_signature
+((function_signature
   name: (identifier) @local.definition)
+  (#set! local.definition-scope "parent"))
 
-(getter_signature
+((getter_signature
   name: (identifier) @local.definition)
+  (#set! local.definition-scope "parent"))
 
-(setter_signature
+((setter_signature
   name: (identifier) @local.definition)
+  (#set! local.definition-scope "parent"))
 
 ; Types
 (class_declaration
