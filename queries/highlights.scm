@@ -400,5 +400,7 @@
 
 (record_field (label (identifier) @property))
 (record_literal (label (identifier) @property))
+(record_pattern (label (identifier) @property))
+(object_pattern (label (identifier) @property))
 
 "rethrow" @keyword

@@ -79,6 +79,21 @@ testCommand(
       expect(output).toContain("record.<span class='property'>item</span>");
       expect(output).toContain("multiple.<span class='property'>first</span>");
       expect(output).toContain("<span class='keyword'>rethrow</span>");
+      expect(output).toContain("<span class='property'>item</span>:<span class='variable'>single</span>");
+      expect(output).toContain("<span class='property'>item</span>:<span class='variable'>secondValue</span>");
+      expect(output).toContain("<span class='property'>item</span>:<span class='variable'>boxed</span>");
+      expect(output).toContain(
+        "<span class='property'>item</span>:<span class='keyword'>var</span> <span class='variable'>matched</span>"
+      );
+      expect(output).toContain(
+        "<span class='property'>item</span>:<span class='keyword'>var</span> <span class='variable'>objectMatch</span>"
+      );
+      const shorthand = output
+        .split("<span class='function'>shorthand</span>")[1]!
+        .split("<span class='function'>main</span>")[0]!;
+      expect(shorthand.match(/<span class=['"]variable['"]>item<\/span>/g)).toHaveLength(8);
+      expect(shorthand.match(/<span class=['"]variable['"]>item<\/span>\(\)/g)).toHaveLength(4);
+      expect(shorthand.match(/<span class=['"]function['"]>item<\/span>\(\)/g)).toHaveLength(1);
     },
   }
 );
