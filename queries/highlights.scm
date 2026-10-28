@@ -92,12 +92,23 @@
 (call_expression
   function: (identifier) @function.call)
 
+(call_expression
+  function: (instantiation_expression
+    function: (identifier) @function.call))
+
 ; Method calls
 (call_expression
   function: [
     (member_expression property: (identifier) @function.method.call)
     (null_aware_member_expression property: (identifier) @function.method.call)
   ])
+
+(call_expression
+  function: (instantiation_expression
+    function: [
+      (member_expression property: (identifier) @function.method.call)
+      (null_aware_member_expression property: (identifier) @function.method.call)
+    ]))
 
 (cascade_call_expression
   property: (identifier) @function.method.call)
