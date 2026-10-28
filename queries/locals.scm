@@ -10,11 +10,13 @@
   (if_element (if_case_clause) @local.scope-source consequence: (_) @local.scope-import)
 ]
 
-; locals.scm - Dart scope and variable resolution queries
+((class_declaration (primary_constructor)  body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
+  (#not-any-of? @_modifier "static" "late"))
 
-; ============================================================================
-; Scopes
-; ============================================================================
+((enum_declaration (primary_constructor)  body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope))))))
+  (#not-any-of? @_modifier "static" "late"))
+
+(primary_constructor) @local.scope
 
 [
   (function_declaration)
@@ -35,20 +37,35 @@
     (operator_signature)
   ])) @local.scope
 
-((formal_parameter
-  (identifier) @local.definition
-  (formal_parameter_list)) @local.scope
-  (#set! local.definition-scope "parent"))
+(formal_parameter
+  (formal_parameter_list) @local.scope)
 
-((constructor_param
-  (identifier) @local.definition
-  (formal_parameter_list)) @local.scope
-  (#set! local.definition-scope "parent"))
+(formal_parameter
+  (type_parameters) @local.scope)
 
-((super_formal_parameter
-  (identifier) @local.definition
-  (formal_parameter_list)) @local.scope
-  (#set! local.definition-scope "parent"))
+(formal_parameter
+  (type_parameters) @local.scope-source
+  (formal_parameter_list) @local.scope-import)
+
+(constructor_param
+  (formal_parameter_list) @local.scope)
+
+(constructor_param
+  (type_parameters) @local.scope)
+
+(constructor_param
+  (type_parameters) @local.scope-source
+  (formal_parameter_list) @local.scope-import)
+
+(super_formal_parameter
+  (formal_parameter_list) @local.scope)
+
+(super_formal_parameter
+  (type_parameters) @local.scope)
+
+(super_formal_parameter
+  (type_parameters) @local.scope-source
+  (formal_parameter_list) @local.scope-import)
 
 (function_type) @local.scope
 
@@ -106,11 +123,6 @@
   (#eq? @_selector @local.scope)
   (#set! local.scope-inherits false))
 
-; ============================================================================
-; Definitions
-; ============================================================================
-
-; Variables
 ([
   (for_statement name: (identifier) @local.definition)
   (for_element name: (identifier) @local.definition)
@@ -126,24 +138,12 @@
 (static_final_declaration
   (identifier) @local.definition)
 
-; Parameters
-(formal_parameter
-  (identifier) @local.definition .)
-
-(constructor_param
-  (identifier) @local.definition .)
-
-(super_formal_parameter
-  (identifier) @local.definition .)
-
-; Catch variables
 (catch_clause
   exception: (identifier) @local.definition)
 
 (catch_clause
   stack_trace: (identifier) @local.definition)
 
-; Functions
 ((function_signature
   name: (identifier) @local.definition)
   (#set! local.definition-scope "parent"))
@@ -156,7 +156,6 @@
   name: (identifier) @local.definition)
   (#set! local.definition-scope "parent"))
 
-; Types
 (class_declaration
   name: (identifier) @local.definition)
 
@@ -175,21 +174,123 @@
 (type_parameter
   (type_identifier) @local.definition)
 
-; Import aliases
 (import_specification
   alias: (identifier) @local.definition)
 
-; Pattern bindings (Dart 3.0)
 ((variable_pattern
   name: (identifier) @local.definition)
   (#not-eq? @local.definition "_"))
 
-; ============================================================================
-; References
-; ============================================================================
-
 (identifier) @local.reference
 (type_identifier) @local.reference
+
+(formal_parameter_list
+  [
+    (formal_parameter (identifier) @local.definition)
+    (formal_parameter (constructor_param (identifier) @local.definition))
+    (formal_parameter (super_formal_parameter (identifier) @local.definition))
+    (optional_formal_parameters (formal_parameter (identifier) @local.definition))
+    (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
+    (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
+  ])
+
+((class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
+  (#not-any-of? @_modifier "static" "late"))
+
+((enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (declaration ["static" "late"]* @_modifier (initialized_identifier_list (initialized_identifier value: (_) @local.scope-import))))))
+  (#not-any-of? @_modifier "static" "late"))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"] (identifier) @local.definition))))
+  (#set! local.definition-scope "parent"))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"] (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter (constructor_param (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition))))))
+  (#set! local.definition-scope "parent"))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"] (identifier) @local.definition))))
+  (#set! local.definition-scope "parent"))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"] (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter (constructor_param (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition))))))
+  (#set! local.definition-scope "parent"))
+
+((extension_type_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter (identifier) @local.definition))))
+  (#set! local.definition-scope "parent"))
+
+((extension_type_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((extension_type_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter (constructor_param (identifier) @local.definition)))))
+  (#set! local.definition-scope "parent"))
+
+((extension_type_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition))))))
+  (#set! local.definition-scope "parent"))
+
+(class_declaration (primary_constructor) body: (class_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope))))))
+
+(class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope-import))))))
+
+(class_declaration (primary_constructor) body: (class_body (class_member (declaration (primary_constructor_body_signature (initializers) @local.scope)))))
+
+(class_declaration (primary_constructor) @local.scope-source body: (class_body (class_member (declaration (primary_constructor_body_signature (initializers) @local.scope-import)))))
+
+((class_declaration
+  (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.definition-predeclared)))
+  body: (class_body
+    (class_member
+      (method_declaration
+        signature: (method_signature (primary_constructor_body_signature))
+        body: (function_body) @local.definition-region))))
+  (#not-any-of? @_field "final" "var")
+  (#set! local.definition-style "variable.parameter"))
+
+((class_declaration
+  (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.definition-predeclared))))
+  body: (class_body
+    (class_member
+      (method_declaration
+        signature: (method_signature (primary_constructor_body_signature))
+        body: (function_body) @local.definition-region))))
+  (#not-any-of? @_field "final" "var")
+  (#set! local.definition-style "variable.parameter"))
+
+(enum_declaration (primary_constructor) body: (enum_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope))))))
+
+(enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope-import))))))
+
+(enum_declaration (primary_constructor) body: (enum_body (class_member (declaration (primary_constructor_body_signature (initializers) @local.scope)))))
+
+(enum_declaration (primary_constructor) @local.scope-source body: (enum_body (class_member (declaration (primary_constructor_body_signature (initializers) @local.scope-import)))))
+
+((enum_declaration
+  (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.definition-predeclared)))
+  body: (enum_body
+    (class_member
+      (method_declaration
+        signature: (method_signature (primary_constructor_body_signature))
+        body: (function_body) @local.definition-region))))
+  (#not-any-of? @_field "final" "var")
+  (#set! local.definition-style "variable.parameter"))
+
+((enum_declaration
+  (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.definition-predeclared))))
+  body: (enum_body
+    (class_member
+      (method_declaration
+        signature: (method_signature (primary_constructor_body_signature))
+        body: (function_body) @local.definition-region))))
+  (#not-any-of? @_field "final" "var")
+  (#set! local.definition-style "variable.parameter"))
 
 ((class_declaration
   (type_parameters

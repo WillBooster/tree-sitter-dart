@@ -1,0 +1,1 @@
+int target(){print('global');return 9;} class PC.named(int target){final int stored;this:stored=target;factory PC.alt(){return PC.named(target());} PC.other():this.named(target());void m(){print(stored);target();}} void main(){PC.alt().m();PC.other().m();}
