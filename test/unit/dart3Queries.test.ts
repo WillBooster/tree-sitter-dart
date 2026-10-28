@@ -88,6 +88,10 @@ testCommand(
       expect(output).toContain(
         "<span class='property'>item</span>:<span class='keyword'>var</span> <span class='variable'>objectMatch</span>"
       );
+      expect(output).toContain("<span class='keyword'>const</span> (<span class='property'>item</span>:1)");
+      expect(output).toContain(
+        "<span class='keyword'>const</span> (<span class='property'>first</span>:1,<span class='property'>item</span>:1)"
+      );
       const shorthand = output
         .split("<span class='function'>shorthand</span>")[1]!
         .split("<span class='function'>main</span>")[0]!;

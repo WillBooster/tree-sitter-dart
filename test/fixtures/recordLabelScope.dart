@@ -21,4 +21,10 @@ void shorthand() {
   switch (CallableBox(() => 3)) { case CallableBox(:var item): print(item()); }
   print(item());
 }
-void main() { inspect(); shorthand(); }
+void constantRecords(Object input) {
+  switch (input) {
+    case const (item:1): print(1);
+    case const (first:1,item:1): print(2);
+  }
+}
+void main() { inspect(); shorthand(); constantRecords((item:1)); }
