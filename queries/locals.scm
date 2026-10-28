@@ -1,3 +1,120 @@
+((initialized_variable_definition name: (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((initialized_variable_definition (initialized_identifier name: (identifier) @local.scope))
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((local_function_declaration (function_signature name: (identifier) @local.scope))
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((type_parameter (type_identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((typed_identifier name: (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((for_statement name: (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((for_element name: (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((variable_pattern name: (identifier) @local.scope)
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+([
+  (function_expression (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (function_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (setter_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (constructor_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (constant_constructor_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (factory_constructor_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (redirecting_factory_constructor_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (operator_signature (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (type_alias (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (formal_parameter (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (constructor_param (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+  (super_formal_parameter (formal_parameter_list
+    [
+      (formal_parameter (identifier) @local.scope)
+      (optional_formal_parameters (formal_parameter (identifier) @local.scope))
+    ]))
+]
+  (#eq? @local.scope "_")
+  (#set! local.scope-inherits false))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.scope))))
+  (#eq? @local.scope "_")
+  (#not-any-of? @_field "final" "var")
+  (#set! local.scope-inherits false))
+
+((class_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.scope)))))
+  (#eq? @local.scope "_")
+  (#not-any-of? @_field "final" "var")
+  (#set! local.scope-inherits false))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (formal_parameter ["final" "var"]? @_field (identifier) @local.scope))))
+  (#eq? @local.scope "_")
+  (#not-any-of? @_field "final" "var")
+  (#set! local.scope-inherits false))
+
+((enum_declaration (primary_constructor parameters: (formal_parameter_list (optional_formal_parameters (formal_parameter ["final" "var"]? @_field (identifier) @local.scope)))))
+  (#eq? @local.scope "_")
+  (#not-any-of? @_field "final" "var")
+  (#set! local.scope-inherits false))
+
 [
   (if_statement (if_case_clause) consequence: (_) @local.scope)
   (if_element (if_case_clause) consequence: (_) @local.scope)
@@ -131,11 +248,25 @@
 ]
   (#not-eq? @local.definition "_"))
 
-(initialized_variable_definition
+((initialized_variable_definition
   name: (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
-(initialized_identifier
+((initialized_identifier
   (identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
+
+((initialized_identifier_list (initialized_identifier (identifier) @local.definition))
+  (#eq? @local.definition "_"))
+
+([
+  (function_declaration signature: (function_signature name: (identifier) @local.definition))
+  (external_function_declaration signature: (function_signature name: (identifier) @local.definition))
+  (method_signature (function_signature name: (identifier) @local.definition))
+  (declaration (function_signature name: (identifier) @local.definition))
+]
+  (#eq? @local.definition "_")
+  (#set! local.definition-scope "parent"))
 
 (static_final_declaration
   (identifier) @local.definition)
@@ -148,6 +279,7 @@
 
 ((function_signature
   name: (identifier) @local.definition)
+  (#not-eq? @local.definition "_")
   (#set! local.definition-scope "parent"))
 
 ((getter_signature
@@ -174,8 +306,9 @@
   (type_identifier) @local.definition)
   (#set! local.definition-scope "parent"))
 
-(type_parameter
+((type_parameter
   (type_identifier) @local.definition)
+  (#not-eq? @local.definition "_"))
 
 (import_specification
   alias: (identifier) @local.definition)
@@ -187,12 +320,17 @@
 (identifier) @local.reference
 (type_identifier) @local.reference
 
-(formal_parameter_list
+((formal_parameter_list
   [
     (formal_parameter (identifier) @local.definition)
+    (optional_formal_parameters (formal_parameter (identifier) @local.definition))
+  ])
+  (#not-eq? @local.definition "_"))
+
+(formal_parameter_list
+  [
     (formal_parameter (constructor_param (identifier) @local.definition))
     (formal_parameter (super_formal_parameter (identifier) @local.definition))
-    (optional_formal_parameters (formal_parameter (identifier) @local.definition))
     (optional_formal_parameters (formal_parameter (constructor_param (identifier) @local.definition)))
     (optional_formal_parameters (formal_parameter (super_formal_parameter (identifier) @local.definition)))
   ])
@@ -255,6 +393,7 @@
         signature: (method_signature (primary_constructor_body_signature))
         body: (function_body) @local.definition-region))))
   (#not-any-of? @_field "final" "var")
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "variable.parameter"))
 
 ((class_declaration
@@ -265,6 +404,7 @@
         signature: (method_signature (primary_constructor_body_signature))
         body: (function_body) @local.definition-region))))
   (#not-any-of? @_field "final" "var")
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "variable.parameter"))
 
 (enum_declaration (primary_constructor) body: (enum_body (class_member (method_declaration signature: (method_signature (primary_constructor_body_signature (initializers) @local.scope))))))
@@ -283,6 +423,7 @@
         signature: (method_signature (primary_constructor_body_signature))
         body: (function_body) @local.definition-region))))
   (#not-any-of? @_field "final" "var")
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "variable.parameter"))
 
 ((enum_declaration
@@ -293,69 +434,83 @@
         signature: (method_signature (primary_constructor_body_signature))
         body: (function_body) @local.definition-region))))
   (#not-any-of? @_field "final" "var")
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "variable.parameter"))
 
 ((class_declaration
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((mixin_application_class
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((mixin_declaration
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((enum_declaration
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((extension_declaration
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((extension_type_declaration
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((type_alias
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((function_signature
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((function_type
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((function_expression
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((formal_parameter
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((constructor_param
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
 
 ((super_formal_parameter
   (type_parameters
-    (type_parameter (type_identifier) @local.definition-predeclared)+)) @local.definition-region
+    (type_parameter (type_identifier) @local.definition-predeclared))) @local.definition-region
+  (#not-eq? @local.definition-predeclared "_")
   (#set! local.definition-style "type.parameter"))
