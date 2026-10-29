@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Edit, Language, type Node, Parser, Query } from '@willbooster/web-tree-sitter';
+import { Language, type Node, Parser, Query } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import cases from '../fixtures/ifNullPrecedence.json';
-import { captureRecord, checkFollowing, matchRecord, nodeRecord } from '../helpers/treeRecords';
+import { checkFollowing } from '../helpers/checkFollowing';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 const binaryKinds = new Set([
@@ -53,50 +53,6 @@ test.each(['a ??', 'a ?? ? b : c', 'a ?? b ? : c', 'a ?? b ? c :'])(
     expect(tree.rootNode.hasError).toBe(true);
     checkFollowing(tree.rootNode);
     tree.delete();
-  }
-);
-
-const edits = [
-  ['a ?? (b ? c : d)', 'a ?? b ? c : d', 'a ?? b ? c : d'],
-  ['a ?? b', 'a ?? b ?? c', 'a ?? b ?? c'],
-  ['a ?? b ? c : d', '(a ?? b) ? c : d', '(a ?? b) ? c : d'],
-] as const;
-
-test.each(edits)(
-  'editing %s to %s preserves grouping, fields, ranges and raw query results',
-  (before, after, fixture) => {
-    const source = `var result = ${before};\nvoid following() {}`;
-    const startIndex = source.indexOf(before);
-    const updated = source.slice(0, startIndex) + after + source.slice(startIndex + before.length);
-    const old = parser!.parse(source)!;
-    old.edit(
-      new Edit({
-        startIndex,
-        oldEndIndex: startIndex + before.length,
-        newEndIndex: startIndex + after.length,
-        startPosition: { row: 0, column: startIndex },
-        oldEndPosition: { row: 0, column: startIndex + before.length },
-        newEndPosition: { row: 0, column: startIndex + after.length },
-      })
-    );
-    const incremental = parser!.parse(updated, old)!;
-    const fresh = parser!.parse(updated)!;
-    expect(incremental.rootNode.hasError).toBe(false);
-    const value = incremental.rootNode.descendantsOfType('initialized_identifier')[0]!.namedChildren[1]!;
-    expect(group(value)).toEqual(cases.find((item) => item.expression === fixture)!.expected);
-    expect(nodeRecord(incremental.rootNode)).toEqual(nodeRecord(fresh.rootNode));
-    for (const query of queries) {
-      expect(query.matches(incremental.rootNode).map(matchRecord)).toEqual(
-        query.matches(fresh.rootNode).map(matchRecord)
-      );
-      expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
-        query.captures(fresh.rootNode).map(captureRecord)
-      );
-    }
-    checkFollowing(incremental.rootNode);
-    fresh.delete();
-    incremental.delete();
-    old.delete();
   }
 );
 

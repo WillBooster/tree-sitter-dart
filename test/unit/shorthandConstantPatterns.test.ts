@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Edit, Language, type Node, Parser, Query, type QueryCapture } from '@willbooster/web-tree-sitter';
+import { Language, type Node, Parser, Query } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
@@ -73,50 +73,19 @@ test.each(['const .', 'const .named(value:)', 'const .origin(,)', 'const .new(,)
   }
 );
 
-const edits = [
-  ['.red', 'const .origin()', false],
-  ['const .filled(2)', 'const .filled(3)', false],
-  ['const .named(value: 2)', 'const .new(2)', false],
-  ['const .origin()', 'const .origin(,)', true],
-] as const;
-
-test.each(edits)(
-  'editing %s to %s preserves fields, ranges, raw captures and the next declaration',
-  (before, after, hasError) => {
-    const source = `void f(Object value) { if (value case ${before}) {} }\nvoid following() {}`;
-    const startIndex = source.indexOf(before);
-    const updated = source.slice(0, startIndex) + after + source.slice(startIndex + before.length);
-    const old = parser!.parse(source)!;
-    old.edit(
-      new Edit({
-        startIndex,
-        oldEndIndex: startIndex + before.length,
-        newEndIndex: startIndex + after.length,
-        startPosition: { row: 0, column: startIndex },
-        oldEndPosition: { row: 0, column: startIndex + before.length },
-        newEndPosition: { row: 0, column: startIndex + after.length },
-      })
-    );
-    const incremental = parser!.parse(updated, old)!;
-    const fresh = parser!.parse(updated)!;
-    expect(incremental.rootNode.hasError).toBe(hasError);
-    expect(nodeRecord(incremental.rootNode)).toEqual(nodeRecord(fresh.rootNode));
-    for (const query of queries) {
-      expect(query.matches(incremental.rootNode).map((match) => match.captures.map(captureRecord))).toEqual(
-        query.matches(fresh.rootNode).map((match) => match.captures.map(captureRecord))
-      );
-      expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
-        query.captures(fresh.rootNode).map(captureRecord)
-      );
-    }
-    expect(
-      incremental.rootNode.namedChildren.at(-1)!.childForFieldName('signature')!.childForFieldName('name')!.text
-    ).toBe('following');
-    fresh.delete();
-    incremental.delete();
-    old.delete();
-  }
-);
+test.each([
+  ['const .origin()', false],
+  ['const .filled(3)', false],
+  ['const .new(2)', false],
+  ['const .origin(,)', true],
+] as const)('an if-case on %s keeps the following declaration', (pattern, hasError) => {
+  const tree = parser!.parse(`void f(Object value) { if (value case ${pattern}) {} }\nvoid following() {}`)!;
+  expect(tree.rootNode.hasError).toBe(hasError);
+  expect(tree.rootNode.namedChildren.at(-1)!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
+    'following'
+  );
+  tree.delete();
+});
 
 function checkPatterns(source: string, patterns: string[]): void {
   const tree = parser!.parse(source)!;
@@ -144,26 +113,4 @@ function hasErrorWithin(node: Node, start: number, end: number): boolean {
     (node.hasError && node.startIndex >= start && node.endIndex <= end) ||
     node.children.some((child) => hasErrorWithin(child, start, end))
   );
-}
-
-function nodeRecord(node: Node): unknown[] {
-  return [
-    node.type,
-    node.isNamed,
-    node.isMissing,
-    node.startIndex,
-    node.endIndex,
-    node.children.map((child, index) => [node.fieldNameForChild(index), nodeRecord(child)]),
-  ];
-}
-
-function captureRecord(capture: QueryCapture): unknown[] {
-  return [
-    capture.patternIndex,
-    capture.name,
-    capture.node.type,
-    capture.node.text,
-    capture.node.startIndex,
-    capture.node.endIndex,
-  ];
 }

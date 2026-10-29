@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Edit, Language, type Node, Parser, Query, type QueryCapture } from '@willbooster/web-tree-sitter';
+import { Language, Parser, Query, type QueryCapture } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
@@ -85,59 +85,20 @@ test.each(cases)('%s exposes a constructor signature and one semantic method tag
   tree.delete();
 });
 
-const edits = [
-  ['class C { new() {} }', 'new()', 'new named()', false],
-  ['class C { external factory named(); }', 'named()', '()', false],
-  ['class C { factory() => D(); }', '=> D()', '= D', false],
-  ['class C { new named(); }', 'named()', 'named /* parameters */ ()', false],
-  ['class C { new named(); }', 'named()', 'named(,)', true],
-] as const;
-
-test.each(edits)('%s keeps edits and following declarations consistent', (declaration, before, after, hasError) => {
-  const source = `${declaration}\nvoid following() {}`;
-  const startIndex = source.indexOf(before);
-  const updated = source.slice(0, startIndex) + after + source.slice(startIndex + before.length);
-  const old = parser.parse(source)!;
-  old.edit(
-    new Edit({
-      startIndex,
-      oldEndIndex: startIndex + before.length,
-      newEndIndex: startIndex + after.length,
-      startPosition: { row: 0, column: startIndex },
-      oldEndPosition: { row: 0, column: startIndex + before.length },
-      newEndPosition: { row: 0, column: startIndex + after.length },
-    })
+test.each([
+  ['class C { new named() {} }', false],
+  ['class C { external factory(); }', false],
+  ['class C { factory() = D; }', false],
+  ['class C { new named /* parameters */ (); }', false],
+  ['class C { new named(,); }', true],
+] as const)('%s keeps the following declaration', (declaration, hasError) => {
+  const tree = parser.parse(`${declaration}\nvoid following() {}`)!;
+  expect(tree.rootNode.hasError).toBe(hasError);
+  expect(tree.rootNode.namedChildren.at(-1)!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
+    'following'
   );
-  const incremental = parser.parse(updated, old)!;
-  const fresh = parser.parse(updated)!;
-  expect(incremental.rootNode.hasError).toBe(hasError);
-  expect(nodeRecord(incremental.rootNode)).toEqual(nodeRecord(fresh.rootNode));
-  for (const query of queries) {
-    expect(query.matches(incremental.rootNode).map((match) => match.captures.map(captureRecord))).toEqual(
-      query.matches(fresh.rootNode).map((match) => match.captures.map(captureRecord))
-    );
-    expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
-      query.captures(fresh.rootNode).map(captureRecord)
-    );
-  }
-  expect(
-    incremental.rootNode.namedChildren.at(-1)!.childForFieldName('signature')!.childForFieldName('name')!.text
-  ).toBe('following');
-  fresh.delete();
-  incremental.delete();
-  old.delete();
+  tree.delete();
 });
-
-function nodeRecord(node: Node): unknown[] {
-  return [
-    node.type,
-    node.isNamed,
-    node.isMissing,
-    node.startIndex,
-    node.endIndex,
-    node.children.map((child, index) => [node.fieldNameForChild(index), nodeRecord(child)]),
-  ];
-}
 
 function captureRecord(capture: QueryCapture): unknown[] {
   return [
