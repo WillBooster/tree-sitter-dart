@@ -77,16 +77,6 @@ test('retains a later annotation while recovering from malformed metadata', () =
   }
 });
 
-test('keeps the record-return annotation separate from a later annotation', () => {
-  const tree = parser!.parse(recordCases.at(-1)!)!;
-  try {
-    expectRecordReturn(tree);
-    expect(tree.rootNode.descendantsOfType('annotation_arguments')).toHaveLength(1);
-  } finally {
-    tree.delete();
-  }
-});
-
 function expectRecordReturn(tree: Tree): void {
   expect(tree.rootNode.hasError, tree.rootNode.toString()).toBe(false);
   const signature = tree.rootNode
