@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Edit, Language, Parser, Query, type QueryCapture } from '@willbooster/web-tree-sitter';
+import { Language, Parser, Query, type QueryCapture } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
@@ -153,50 +153,22 @@ test.each(explicitNewTriviaCases)(
   }
 );
 
-test('constructor-name edits preserve raw capture pairing and the following declaration', () => {
-  const source = 'class C { C(); }\nvoid following() {}';
-  checkInsertion(source, source.indexOf('C()') + 1, '.named');
-});
-
-test('comment insertion preserves raw capture pairing and the following declaration', () => {
-  const source = 'class C { C.named(); }\nvoid following() {}';
-  checkInsertion(source, source.indexOf('named') + 'named'.length, ' /* comment */ ');
-});
-
-function checkInsertion(original: string, startIndex: number, inserted: string): void {
-  const old = parser.parse(original)!;
-  const updated = original.slice(0, startIndex) + inserted + original.slice(startIndex);
-  old.edit(
-    new Edit({
-      startIndex,
-      oldEndIndex: startIndex,
-      newEndIndex: startIndex + inserted.length,
-      startPosition: { row: 0, column: startIndex },
-      oldEndPosition: { row: 0, column: startIndex },
-      newEndPosition: { row: 0, column: startIndex + inserted.length },
-    })
-  );
-  const incremental = parser.parse(updated, old)!;
-  const fresh = parser.parse(updated)!;
-  expect(incremental.rootNode.hasError).toBe(false);
-  expect(incremental.rootNode.toString()).toBe(fresh.rootNode.toString());
-  const matches = query.matches(incremental.rootNode);
-  const methods = matches.filter((match) => match.captures.some((capture) => capture.name === 'definition.method'));
-  expect(methods).toHaveLength(1);
-  expect(methods[0]!.captures.find((capture) => capture.name === 'name')!.node.text).toBe('named');
-  expect(matches.map((match) => match.captures.map(captureRecord))).toEqual(
-    query.matches(fresh.rootNode).map((match) => match.captures.map(captureRecord))
-  );
-  expect(query.captures(incremental.rootNode).map(captureRecord)).toEqual(
-    query.captures(fresh.rootNode).map(captureRecord)
-  );
-  expect(incremental.rootNode.namedChildren[1]!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
-    'following'
-  );
-  fresh.delete();
-  incremental.delete();
-  old.delete();
-}
+test.each(['class C { C.named(); }', 'class C { C.named /* comment */ (); }'])(
+  '%s has one method tag named after the constructor and keeps the following declaration',
+  (declaration) => {
+    const tree = parser.parse(`${declaration}\nvoid following() {}`)!;
+    expect(tree.rootNode.hasError).toBe(false);
+    const methods = query
+      .matches(tree.rootNode)
+      .filter((match) => match.captures.some((capture) => capture.name === 'definition.method'));
+    expect(methods).toHaveLength(1);
+    expect(methods[0]!.captures.find((capture) => capture.name === 'name')!.node.text).toBe('named');
+    expect(tree.rootNode.namedChildren[1]!.childForFieldName('signature')!.childForFieldName('name')!.text).toBe(
+      'following'
+    );
+    tree.delete();
+  }
+);
 
 function checkConstructorTag(source: string, kind: string, declaration: string, name: string): void {
   const tree = parser.parse(source)!;

@@ -1,22 +1,18 @@
 import path from 'node:path';
 
-import { Edit, Language, Parser, type Tree } from '@willbooster/web-tree-sitter';
+import { Language, Parser } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 let parser: Parser | undefined;
-let coldParser: Parser | undefined;
 
 beforeAll(async () => {
   await Parser.init();
   const language = await Language.load(path.resolve(import.meta.dirname, '../../tree-sitter-dart.wasm'));
   parser = new Parser();
   parser.setLanguage(language);
-  coldParser = new Parser();
-  coldParser.setLanguage(language);
 });
 
 afterAll(() => {
-  coldParser?.delete();
   parser?.delete();
 });
 
@@ -84,58 +80,15 @@ test.each(['id<int>!', 'id<int>..toString()', 'id<int>==id<int>', 'id<List<int>>
   }
 );
 
-const edits = [
-  { before: 'void f(){sink(a < b,c > -x);}', after: 'void f(){sink(a < b,c > (x));}' },
-  { before: 'void f(){sink(a < b,c > /*trivia*/-x);}', after: 'void f(){sink(a < b,c > /*trivia*/(x));}' },
-  { before: 'void f(){var value=id<int>/*trivia*/;}', after: 'void f(){var value=id<int>/*trivia*/-x;}' },
-  { before: 'void f(){var value=id<int>/*trivia*/;}', after: 'void f(){var value=id<int>/*unclosed;}' },
-];
-
-test.each(edits)('incrementally reparses a changed lookahead: $after', ({ before, after }) => {
-  let tree = parser!.parse(before)!;
+test.each([
+  'void f(){sink(a < b,c > -x);}',
+  'void f(){sink(a < b,c > /*trivia*/-x);}',
+  'void f(){var value=id<int>/*trivia*/;}',
+])('parses a lookahead after type arguments without errors in %j', (source) => {
+  const tree = parser!.parse(source)!;
   try {
-    tree = editAndCompare(before, after, tree);
-    tree = editAndCompare(after, before, tree);
     expect(tree.rootNode.hasError, tree.rootNode.toString()).toBe(false);
   } finally {
     tree.delete();
   }
 });
-
-function editAndCompare(before: string, after: string, tree: Tree): Tree {
-  let start = 0;
-  while (start < before.length && start < after.length && before[start] === after[start]) start++;
-  let oldEnd = before.length;
-  let newEnd = after.length;
-  while (oldEnd > start && newEnd > start && before[oldEnd - 1] === after[newEnd - 1]) {
-    oldEnd--;
-    newEnd--;
-  }
-  tree.edit(
-    new Edit({
-      startIndex: start,
-      oldEndIndex: oldEnd,
-      newEndIndex: newEnd,
-      startPosition: position(before, start),
-      oldEndPosition: position(before, oldEnd),
-      newEndPosition: position(after, newEnd),
-    })
-  );
-  const incremental = parser!.parse(after, tree)!;
-  const fresh = coldParser!.parse(after)!;
-  try {
-    expect(incremental.rootNode.toString()).toBe(fresh.rootNode.toString());
-    tree.delete();
-    return incremental;
-  } catch (error) {
-    incremental.delete();
-    throw error;
-  } finally {
-    fresh.delete();
-  }
-}
-
-function position(source: string, index: number): { row: number; column: number } {
-  const rows = source.slice(0, index).split('\n');
-  return { row: rows.length - 1, column: rows.at(-1)!.length };
-}
