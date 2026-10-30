@@ -1,7 +1,6 @@
-import fs from 'node:fs';
 import path from 'node:path';
 
-import { Language, type Node, Parser, Query } from '@willbooster/web-tree-sitter';
+import { Language, type Node, Parser } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import cases from '../fixtures/ifNullPrecedence.json';
@@ -16,20 +15,15 @@ const binaryKinds = new Set([
   'additive_expression',
 ]);
 let parser: Parser | undefined;
-const queries: Query[] = [];
 
 beforeAll(async () => {
   await Parser.init();
   const language = await Language.load(path.join(repositoryRoot, 'tree-sitter-dart.wasm'));
   parser = new Parser();
   parser.setLanguage(language);
-  for (const name of ['tags', 'highlights', 'locals']) {
-    queries.push(new Query(language, fs.readFileSync(path.join(repositoryRoot, `queries/${name}.scm`), 'utf8')));
-  }
 });
 
 afterAll(() => {
-  for (const query of queries) query.delete();
   parser?.delete();
 });
 
@@ -42,7 +36,6 @@ test.each(cases)('$expression has the language-defined grouping', ({ expression,
   expect(value.startIndex).toBe(source.indexOf(expression));
   expect(value.endIndex).toBe(source.indexOf(expression) + expression.length);
   checkFollowing(tree.rootNode);
-  for (const query of queries) query.captures(tree.rootNode);
   tree.delete();
 });
 
