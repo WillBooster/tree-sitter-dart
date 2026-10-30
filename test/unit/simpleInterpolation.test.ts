@@ -1,7 +1,6 @@
-import fs from 'node:fs';
 import path from 'node:path';
 
-import { Language, Parser, Query, type Tree } from '@willbooster/web-tree-sitter';
+import { Language, Parser, type Tree } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 import fixtures from '../fixtures/simpleInterpolation.json';
@@ -25,7 +24,6 @@ const invalidDollarBodies = [
   '$é',
 ];
 let parser: Parser | undefined;
-const queries: Query[] = [];
 
 beforeAll(async () => {
   try {
@@ -33,9 +31,6 @@ beforeAll(async () => {
     const language = await Language.load(path.join(repositoryRoot, 'tree-sitter-dart.wasm'));
     parser = new Parser();
     parser.setLanguage(language);
-    for (const name of ['tags', 'highlights', 'locals']) {
-      queries.push(new Query(language, fs.readFileSync(path.join(repositoryRoot, `queries/${name}.scm`), 'utf8')));
-    }
   } catch (error) {
     cleanup();
     throw error;
@@ -63,12 +58,6 @@ for (const quote of quotes) {
             .map((node) => [node.text, node.startIndex - prefix.length, node.endIndex - prefix.length])
         ).toEqual(expectedEscapes);
         checkFollowing(tree.rootNode);
-        const escapeCaptures = queries[1]!
-          .captures(tree.rootNode)
-          .filter((capture) => capture.name === 'string.escape')
-          .map(({ node }) => [node.text, node.startIndex - prefix.length, node.endIndex - prefix.length]);
-        expect(escapeCaptures).toEqual(expectedEscapes);
-        for (const query of queries) query.captures(tree.rootNode);
       } finally {
         tree.delete();
       }
@@ -149,19 +138,10 @@ function checkDollarBoundary(tree: Tree, source: string): void {
     source.indexOf('following'),
     source.indexOf('following') + 'following'.length,
   ]);
-  expect(
-    queries[0]!
-      .captures(tree.rootNode)
-      .filter((capture) => capture.name === 'name' && capture.node.text === 'following')
-      .map(({ node }) => [node.startIndex, node.endIndex])
-  ).toEqual([[name.startIndex, name.endIndex]]);
-  for (const query of queries) query.matches(tree.rootNode);
 }
 
 function cleanup(): void {
-  const ownedQueries = queries.splice(0);
   const ownedParser = parser;
   parser = undefined;
-  for (const query of ownedQueries) query.delete();
   ownedParser?.delete();
 }

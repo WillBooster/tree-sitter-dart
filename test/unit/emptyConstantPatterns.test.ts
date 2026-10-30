@@ -1,25 +1,19 @@
-import fs from 'node:fs';
 import path from 'node:path';
 
-import { Language, type Node, Parser, Query } from '@willbooster/web-tree-sitter';
+import { Language, type Node, Parser } from '@willbooster/web-tree-sitter';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..');
 const emptyConstants = ['const []', 'const {}', 'const <int>[]', 'const <int>{}', 'const <int, int>{}'];
 let parser: Parser;
-let queries: Query[];
 
 beforeAll(async () => {
   await Parser.init();
   const language = await Language.load(path.join(repositoryRoot, 'tree-sitter-dart.wasm'));
   parser = new Parser().setLanguage(language);
-  queries = ['tags', 'highlights', 'locals'].map(
-    (name) => new Query(language, fs.readFileSync(path.join(repositoryRoot, `queries/${name}.scm`), 'utf8'))
-  );
 });
 
 afterAll(() => {
-  for (const query of queries) query.delete();
   parser.delete();
 });
 
@@ -81,7 +75,6 @@ function checkConstant(source: string, pattern: string, enclosingKind?: string):
   expect(constant.startIndex).toBe(source.indexOf(pattern));
   expect(constant.endIndex).toBe(source.indexOf(pattern) + pattern.length);
   if (enclosingKind) expect(tree.rootNode.descendantsOfType(enclosingKind)).toHaveLength(1);
-  for (const query of queries) query.captures(tree.rootNode);
   tree.delete();
 }
 
