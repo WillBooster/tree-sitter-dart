@@ -36,20 +36,6 @@ pub const LANGUAGE: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_dart)
 /// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types
 pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
-/// The syntax highlighting query for this language.
-///
-/// Used alone, requires the WillBooster highlighter version 15.3.1 or later.
-/// When paired with [`LOCALS_QUERY`], requires version 15.5.0 or later.
-pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
-
-/// The local-variable syntax highlighting query for this language.
-///
-/// Requires [`HIGHLIGHTS_QUERY`] and the WillBooster highlighter version 15.5.0 or later.
-pub const LOCALS_QUERY: &str = include_str!("../../queries/locals.scm");
-
-/// The symbol tagging query for this language.
-pub const TAGS_QUERY: &str = include_str!("../../queries/tags.scm");
-
 #[cfg(test)]
 mod tests {
     #[test]

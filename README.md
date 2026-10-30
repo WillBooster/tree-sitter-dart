@@ -5,7 +5,7 @@
 [![Test](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test.yml/badge.svg)](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test.yml)
 [![Test rust](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test-rust.yml/badge.svg)](https://github.com/WillBooster/tree-sitter-dart/actions/workflows/test-rust.yml)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![wbfy](https://img.shields.io/badge/wbfy-20.49.0-1e90ff.svg)](https://github.com/WillBooster/shared/tree/main/packages/wbfy)
+[![wbfy](https://img.shields.io/badge/wbfy-20.51.1-1e90ff.svg)](https://github.com/WillBooster/shared/tree/main/packages/wbfy)
 [![crates.io](https://img.shields.io/crates/v/willbooster-tree-sitter-dart.svg)](https://crates.io/crates/willbooster-tree-sitter-dart)
 
 Dart grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter), forked from
@@ -29,6 +29,13 @@ Known differences from upstream's 0.2.0 parser include:
 - Error recovery on invalid input can differ from upstream.
   [Issue #4](https://github.com/WillBooster/tree-sitter-dart/issues/4) tracks these differences.
 - A NUL character in a line comment or between tokens parses as ordinary text, where upstream's lexer reports an error.
+
+## Support Scope
+
+This fork maintains only full parsing: valid input yields a correct tree, and invalid input yields `ERROR` or `MISSING`
+nodes without crashing, hanging, or taking more than linear time. Incremental parsing works as in upstream tree-sitter
+but is not tested here, and no queries (highlights, locals, injections, tags) are shipped. Node types, field names, and
+the trees that error recovery produces may change; such changes are released as new major versions.
 
 ## Usage
 
@@ -73,19 +80,7 @@ const parser = new Parser();
 parser.setLanguage(await Language.load(grammar));
 ```
 
-The package also ships `grammar.js`, the queries in `queries/`, and the node types in `src/node-types.json`.
-
-The bundled highlight and locals queries require the WillBooster Rust highlighter or CLI version 15.5.0 or later.
-Loop bindings become available after the entire iterable expression and stop at the loop boundary.
-Custom highlighters must ignore unconfigured helper captures, preserve later captures from overlapping matches,
-and support `@local.definition-context` with all `@local.definition-value` captures
-for the same context node. Definitions before the combined value range become available after it;
-definitions inside the iterable, such as lambda parameters, retain their own scope.
-Custom highlighters must also link direct bindings from `@local.scope-source` to `@local.scope-import` nodes,
-each captured separately as `@local.scope`. Recipient definitions shadow imported bindings.
-Custom highlighters must resolve `@local.definition-predeclared` names throughout their `@local.definition-region`
-using the `local.definition-style` property. Declaration syntax captures retain their own roles.
-The Web runtime exposes these query captures; consumers implement their own locals resolution.
+The package also ships `grammar.js` and the node types in `src/node-types.json`.
 
 In Rust, depend on the [crate](https://crates.io/crates/willbooster-tree-sitter-dart) and on
 [willbooster-tree-sitter](https://crates.io/crates/willbooster-tree-sitter), the runtime this package is tested and
@@ -94,7 +89,7 @@ fuzzed with:
 ```toml
 [dependencies]
 tree-sitter = { package = "willbooster-tree-sitter", version = "15.5.0" }
-tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "16" }
+tree-sitter-dart = { package = "willbooster-tree-sitter-dart", version = "17" }
 ```
 
 ```rust

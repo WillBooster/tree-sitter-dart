@@ -9,10 +9,7 @@
       "path": ".",
       "file-types": ["dart"],
       "injection-regex": "^dart$",
-      "class-name": "TreeSitterDart",
-      "highlights": "queries/highlights.scm",
-      "tags": "queries/tags.scm",
-      "locals": "queries/locals.scm"
+      "class-name": "TreeSitterDart"
     }
   ],
   "metadata": {
