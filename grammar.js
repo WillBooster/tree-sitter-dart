@@ -1697,12 +1697,7 @@ module.exports = grammar({
     _var_or_type: ($) =>
       choice($.type, seq("var", optional($.type))),
 
-    _final_var_or_type: ($) =>
-      choice(
-        "var",
-        "final",
-        seq(optional("final"), $.type),
-      ),
+    _final_var_or_type: ($) => finalVarOrType($.type),
 
     // --- Class members ---
 
@@ -1775,13 +1770,10 @@ module.exports = grammar({
         seq(optional("late"), "final", optional($.type), $.initialized_identifier_list),
         seq(optional("late"), $._var_or_type, $.initialized_identifier_list),
         seq("const", optional($.type), $.static_final_declaration_list),
-        // Abstract field declarations
-        seq("abstract", "final", optional($.type), $.identifier_list),
-        seq("abstract", optional($.type), $.identifier_list),
-        seq("abstract", "covariant", "final", optional($.type), $.identifier_list),
-        seq("abstract", "covariant", optional($.type), $.identifier_list),
-        // External field declarations
-        seq($.external, optional("static"), optional("covariant"), optional(choice("final", "var")), optional($.type), $.identifier_list),
+        seq("abstract", finalVarOrType($.type), $.identifier_list),
+        seq("abstract", "covariant", choice("var", $.type), $.identifier_list),
+        seq($.external, optional("static"), finalVarOrType($.type), $.identifier_list),
+        seq($.external, "covariant", choice("var", $.type), $.identifier_list),
       ),
 
     external: (_) => "external",
@@ -2220,8 +2212,7 @@ module.exports = grammar({
         optional($._metadata),
         optional("augment"),
         field("modifier", $.external),
-        optional("final"),
-        optional(field("type", $.type)),
+        finalVarOrType(field("type", $.type)),
         $.identifier_list,
         ";",
       ),
@@ -2572,4 +2563,8 @@ function assignmentExpression($, expression) {
       field("right", expression),
     ),
   );
+}
+
+function finalVarOrType(type) {
+  return choice("var", "final", seq(optional("final"), type));
 }
