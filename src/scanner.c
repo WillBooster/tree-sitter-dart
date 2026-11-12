@@ -26,15 +26,18 @@ unsigned tree_sitter_dart_external_scanner_serialize(void *p, char *buffer) { (v
 void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsigned n) { (void)p; (void)b; (void)n; }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
+static inline enum TokenType select_template_symbol(const bool *valid_symbols);
+static inline bool finish_template(TSLexer *lexer, bool has_content);
 static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
 static bool scan_interpolation_start(TSLexer *lexer);
 static bool scan_multiline_comments(TSLexer *lexer);
-static bool is_whitespace(int32_t c);
-static void advance(TSLexer *lexer);
 static bool scan_instantiation_close(TSLexer *lexer);
 static bool skip_trivia(TSLexer *lexer);
 static bool skip_comment(TSLexer *lexer);
 static bool scan_block_comment_body(TSLexer *lexer);
+static inline bool at_eof(TSLexer *lexer);
+static inline bool is_whitespace(int32_t c);
+static inline void advance(TSLexer *lexer);
 
 bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
@@ -73,50 +76,50 @@ bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
 
 static bool scan_interpolation_start(TSLexer *lexer) {
   advance(lexer);
-  lexer->mark_end(lexer);
   int32_t next = lexer->lookahead;
-  if (next != '{' && next != '_' && !(next >= 'a' && next <= 'z') && !(next >= 'A' && next <= 'Z')) return false;
+  if (next != '{' && next != '_' && (((uint32_t)next | 32u) - 'a') >= 26u) return false;
+  lexer->mark_end(lexer);
   lexer->result_symbol = INTERPOLATION_START;
   return true;
 }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
-  const enum TokenType templates[] = {
-    TEMPLATE_CHARS_DOUBLE, TEMPLATE_CHARS_SINGLE,
-    TEMPLATE_CHARS_SINGLE_SINGLE, TEMPLATE_CHARS_DOUBLE_SINGLE,
-  };
-  for (unsigned i = 0; i < sizeof(templates) / sizeof(templates[0]); i++) {
-    if (valid_symbols[templates[i]]) {
-      lexer->result_symbol = templates[i];
-      break;
-    }
-  }
+  lexer->result_symbol = select_template_symbol(valid_symbols);
+  bool single_line = valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE];
   for (bool has_content = false;; has_content = true) {
-    lexer->mark_end(lexer);
     switch (lexer->lookahead) {
       case '\'':
       case '"':
-        return has_content;
+      case '$':
+        return finish_template(lexer, has_content);
       case '\n':
       case '\r':
-        if (valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) return false;
-        advance(lexer);
+        if (single_line) return false;
         break;
       case '\0':
         if (lexer->eof(lexer)) return false;
-        advance(lexer);
         break;
-      case '$':
-        return has_content;
       case '\\':
-        if (!valid_symbols[TEMPLATE_CHARS_RAW_SLASH]) return has_content;
+        if (!valid_symbols[TEMPLATE_CHARS_RAW_SLASH]) return finish_template(lexer, has_content);
         lexer->result_symbol = TEMPLATE_CHARS_RAW_SLASH;
-        advance(lexer);
         break;
       default:
-        advance(lexer);
+        break;
     }
+    advance(lexer);
   }
+}
+
+static inline enum TokenType select_template_symbol(const bool *valid_symbols) {
+  if (valid_symbols[TEMPLATE_CHARS_DOUBLE]) return TEMPLATE_CHARS_DOUBLE;
+  if (valid_symbols[TEMPLATE_CHARS_SINGLE]) return TEMPLATE_CHARS_SINGLE;
+  if (valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) return TEMPLATE_CHARS_SINGLE_SINGLE;
+  return TEMPLATE_CHARS_DOUBLE_SINGLE;
+}
+
+static inline bool finish_template(TSLexer *lexer, bool has_content) {
+  if (has_content) lexer->mark_end(lexer);
+  return has_content;
 }
 
 static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols) {
@@ -147,8 +150,8 @@ static bool scan_multiline_comments(TSLexer *lexer) {
 
 static bool scan_instantiation_close(TSLexer *lexer) {
   advance(lexer);
-  lexer->mark_end(lexer);
   if (lexer->lookahead == '=') return false;
+  lexer->mark_end(lexer);
   if (!skip_trivia(lexer)) return false;
   lexer->result_symbol = INSTANTIATION_CLOSE;
   switch (lexer->lookahead) {
@@ -168,7 +171,7 @@ static bool scan_instantiation_close(TSLexer *lexer) {
       advance(lexer);
       return lexer->lookahead == '=';
     default:
-      return lexer->eof(lexer);
+      return at_eof(lexer);
   }
 }
 
@@ -187,7 +190,7 @@ static bool skip_trivia(TSLexer *lexer) {
 static bool skip_comment(TSLexer *lexer) {
   advance(lexer);
   if (lexer->lookahead == '/') {
-    while (!lexer->eof(lexer) && lexer->lookahead != '\n' && lexer->lookahead != '\r') advance(lexer);
+    while (lexer->lookahead != '\n' && lexer->lookahead != '\r' && !at_eof(lexer)) advance(lexer);
     return true;
   }
   if (lexer->lookahead != '*') return false;
@@ -197,7 +200,7 @@ static bool skip_comment(TSLexer *lexer) {
 
 static bool scan_block_comment_body(TSLexer *lexer) {
   unsigned nesting_depth = 1;
-  while (!lexer->eof(lexer)) {
+  while (!at_eof(lexer)) {
     int32_t previous = lexer->lookahead;
     advance(lexer);
     if (previous == '*' && lexer->lookahead == '/') {
@@ -211,8 +214,12 @@ static bool scan_block_comment_body(TSLexer *lexer) {
   return false;
 }
 
-static bool is_whitespace(int32_t c) {
-  return c == ' ' || (c >= '\t' && c <= '\r');
+static inline bool at_eof(TSLexer *lexer) {
+  return lexer->lookahead == 0 && lexer->eof(lexer);
 }
 
-static void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
+static inline bool is_whitespace(int32_t c) {
+  return c == ' ' || ((uint32_t)c - '\t') < 5u;
+}
+
+static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
