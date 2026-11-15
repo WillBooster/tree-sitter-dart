@@ -32,8 +32,38 @@ test('uses a Wasm build built from the current parser', () => {
 // measured after warm-up parses and in alternation, each keeping its fastest run; their ratio is about 10 locally, and
 // 18 leaves a margin over that while failing for growth faster than about n^1.25.
 test('recovers from an error on each line in linear time', { timeout: 60_000 }, () => {
-  const small = '$ a\n'.repeat(2000);
-  const large = '$ a\n'.repeat(20_000);
+  expectLinearErrorParse('$ a\n'.repeat(2000), '$ a\n'.repeat(20_000));
+});
+
+test('retains coalesced content in unterminated strings without re-lexing opposite quotes', { timeout: 60_000 }, () => {
+  for (const [opener, line] of [
+    ["const html = r'''\n", '<div class="name">text</div>\n'],
+    ['const json = """\n', "{'key': 'value'},\n"],
+    ["const single = \"unterminated 'quoted' ", 'word '],
+    ['const rawSingle = r\'unterminated "quoted" ', 'word '],
+  ] as const) {
+    const unterminated = `${opener}${line.repeat(10_000)}`;
+    expectLinearErrorParse(`${opener}${line.repeat(1000)}`, unterminated);
+  }
+
+  for (const [source, tokenType, expectedText] of [
+    ["const s = \"hello 'world'\nvoid after() {}", 'template_chars_double_single', "hello 'world'"],
+    ['const s = r\'hello "world" $x\nvoid after() {}', 'template_chars_single_single', 'hello "world" $x'],
+    ["const s = '''\n<div class=\"name\">text</div>\n", 'template_chars_single', '\n<div class="name">text</div>\n'],
+    ['const s = r"""\n{\'key\': $value}\n', 'template_chars_double', "\n{'key': $value}\n"],
+  ] as const) {
+    const tree = parser.parse(source);
+    if (!tree) throw new Error('The parser returned no tree');
+    try {
+      expect(tree.rootNode.hasError).toBe(true);
+      expect(tree.rootNode.descendantsOfType(tokenType).map((node) => node.text)).toEqual([expectedText]);
+    } finally {
+      tree.delete();
+    }
+  }
+});
+
+function expectLinearErrorParse(small: string, large: string): void {
   parseCpuTime(large);
   parseCpuTime(large);
   let smallFastest = Infinity;
@@ -43,7 +73,7 @@ test('recovers from an error on each line in linear time', { timeout: 60_000 }, 
     largeFastest = Math.min(largeFastest, parseCpuTime(large));
   }
   expect(largeFastest / smallFastest).toBeLessThan(18);
-});
+}
 
 function parseCpuTime(source: string): number {
   const start = process.threadCpuUsage();
