@@ -27,8 +27,7 @@ void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsig
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
 static inline int step_template_char(TSLexer *lexer, int32_t quote, bool is_raw, bool single_line, bool recovery,
                                      bool has_content);
-static inline bool stops_template(TSLexer *lexer, int32_t c, int32_t quote, bool is_raw, bool single_line,
-                                  bool recovery);
+static inline bool stops_template(int32_t c, int32_t quote, bool is_raw, bool recovery);
 static inline enum TokenType select_template_symbol(const bool *valid_symbols);
 static inline bool finish_template(TSLexer *lexer, bool has_content);
 static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
@@ -103,20 +102,20 @@ static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
 static inline int step_template_char(TSLexer *lexer, int32_t quote, bool is_raw, bool single_line, bool recovery,
                                      bool has_content) {
   int32_t c = lexer->lookahead;
-  if (stops_template(lexer, c, quote, is_raw, single_line, recovery)) return finish_template(lexer, has_content);
+  if (stops_template(c, quote, is_raw, recovery)) return finish_template(lexer, has_content);
+  if ((single_line && (c == '\n' || c == '\r')) || at_eof(lexer)) {
+    return !recovery && finish_template(lexer, has_content);
+  }
   if (c != '\\') return -1;
   if (!is_raw) return finish_template(lexer, has_content);
   lexer->result_symbol = TEMPLATE_CHARS_RAW_SLASH;
   return -1;
 }
 
-static inline bool stops_template(TSLexer *lexer, int32_t c, int32_t quote, bool is_raw, bool single_line,
-                                  bool recovery) {
+static inline bool stops_template(int32_t c, int32_t quote, bool is_raw, bool recovery) {
   if (c == quote) return true;
   if (recovery && (c == '\'' || c == '"')) return true;
-  if (c == '$' && !is_raw) return true;
-  if (single_line && (c == '\n' || c == '\r')) return true;
-  return c == '\0' && lexer->eof(lexer);
+  return c == '$' && !is_raw;
 }
 
 static inline enum TokenType select_template_symbol(const bool *valid_symbols) {
