@@ -61,6 +61,24 @@ test('retains coalesced content in unterminated strings without re-lexing opposi
       tree.delete();
     }
   }
+
+  for (const raw of ['', 'r'] as const) {
+    const prefixes = raw === '' ? ['', 'hello', String.raw`\t`, '$x', '${x}'] : ['', 'hello', '\\'];
+    for (const quote of ["'", '"'] as const) {
+      for (const prefix of prefixes) {
+        for (const ending of ['\n', '\r', '\r\n', '\n  ', '\n\n'] as const) {
+          const source = `var s = ${raw}${quote}${prefix}${ending}${quote};`;
+          const tree = parser.parse(source);
+          if (!tree) throw new Error('The parser returned no tree');
+          try {
+            expect(tree.rootNode.hasError, source).toBe(true);
+          } finally {
+            tree.delete();
+          }
+        }
+      }
+    }
+  }
 });
 
 function expectLinearErrorParse(small: string, large: string): void {

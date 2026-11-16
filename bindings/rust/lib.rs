@@ -65,18 +65,32 @@ mod tests {
     }
 
     #[test]
-    fn carriage_return_ends_single_line_strings() {
-        for quote in ["'", "\""] {
-            let source = format!("var text = {quote}before\rafter{quote};\nvoid following() {{}}");
-            let tree = parse(&source);
-            assert!(
-                tree.root_node().has_error(),
-                "{}",
-                tree.root_node().to_sexp()
-            );
-            let multiline =
-                format!("var text = {quote}{quote}{quote}before\rafter{quote}{quote}{quote};");
-            parse_valid(&multiline);
+    fn line_breaks_end_single_line_strings() {
+        for raw in ["", "r"] {
+            for quote in ["'", "\""] {
+                let prefixes: &[&str] = if raw.is_empty() {
+                    &["", "hello", "\\t", "$x", "${x}"]
+                } else {
+                    &["", "hello", "\\"]
+                };
+                for prefix in prefixes {
+                    for ending in ["\n", "\r", "\r\n", "\n  ", "\n\n"] {
+                        let source = format!(
+                            "var text = {raw}{quote}{prefix}{ending}{quote};\nvoid following() {{}}"
+                        );
+                        let tree = parse(&source);
+                        assert!(
+                            tree.root_node().has_error(),
+                            "{source:?}: {}",
+                            tree.root_node().to_sexp()
+                        );
+                    }
+                }
+                let multiline = format!(
+                    "var text = {raw}{quote}{quote}{quote}before\rafter{quote}{quote}{quote};"
+                );
+                parse_valid(&multiline);
+            }
         }
     }
 

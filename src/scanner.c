@@ -15,7 +15,7 @@ enum TokenType {
   ANNOTATION_DOT,
   ANNOTATION_TYPE_ARGUMENTS,
   ANNOTATION_ARGUMENTS_START,
-  // Never emitted: recovery enables every external token, preserving the template-scanner path.
+  // Unused by grammar rules: enabled during error recovery, and emitted empty at illegal single-line string breaks.
   ERROR_RECOVERY,
 };
 
@@ -103,9 +103,13 @@ static inline int step_template_char(TSLexer *lexer, int32_t quote, bool is_raw,
                                      bool has_content) {
   int32_t c = lexer->lookahead;
   if (stops_template(c, quote, is_raw, recovery)) return finish_template(lexer, has_content);
-  if ((single_line && (c == '\n' || c == '\r')) || at_eof(lexer)) {
-    return !recovery && finish_template(lexer, has_content);
+  if (single_line && (c == '\n' || c == '\r')) {
+    if (recovery) return 0;
+    if (!has_content) lexer->result_symbol = ERROR_RECOVERY;
+    lexer->mark_end(lexer);
+    return 1;
   }
+  if (at_eof(lexer)) return !recovery && finish_template(lexer, has_content);
   if (c != '\\') return -1;
   if (!is_raw) return finish_template(lexer, has_content);
   lexer->result_symbol = TEMPLATE_CHARS_RAW_SLASH;
