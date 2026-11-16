@@ -15,7 +15,7 @@ enum TokenType {
   ANNOTATION_DOT,
   ANNOTATION_TYPE_ARGUMENTS,
   ANNOTATION_ARGUMENTS_START,
-  // Never emitted: recovery enables every external token, preserving the template-scanner path.
+  // Unused by grammar rules: enabled during error recovery, and emitted empty at illegal single-line string breaks.
   ERROR_RECOVERY,
 };
 
@@ -25,6 +25,9 @@ unsigned tree_sitter_dart_external_scanner_serialize(void *p, char *buffer) { (v
 void tree_sitter_dart_external_scanner_deserialize(void *p, const char *b, unsigned n) { (void)p; (void)b; (void)n; }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols);
+static inline int step_template_char(TSLexer *lexer, int32_t quote, bool is_raw, bool single_line, bool recovery,
+                                     bool has_content);
+static inline bool stops_template(int32_t c, int32_t quote, bool is_raw, bool recovery);
 static inline enum TokenType select_template_symbol(const bool *valid_symbols);
 static inline bool finish_template(TSLexer *lexer, bool has_content);
 static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
@@ -83,30 +86,40 @@ static bool scan_interpolation_start(TSLexer *lexer) {
 }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {
-  lexer->result_symbol = select_template_symbol(valid_symbols);
+  enum TokenType symbol = select_template_symbol(valid_symbols);
+  lexer->result_symbol = symbol;
+  bool recovery = valid_symbols[ERROR_RECOVERY];
+  bool is_raw = valid_symbols[TEMPLATE_CHARS_RAW_SLASH] && !recovery;
   bool single_line = valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE];
+  int32_t quote = (symbol == TEMPLATE_CHARS_DOUBLE || symbol == TEMPLATE_CHARS_DOUBLE_SINGLE) ? '"' : '\'';
   for (bool has_content = false;; has_content = true) {
-    switch (lexer->lookahead) {
-      case '\'':
-      case '"':
-      case '$':
-        return finish_template(lexer, has_content);
-      case '\n':
-      case '\r':
-        if (single_line) return false;
-        break;
-      case '\0':
-        if (lexer->eof(lexer)) return false;
-        break;
-      case '\\':
-        if (!valid_symbols[TEMPLATE_CHARS_RAW_SLASH]) return finish_template(lexer, has_content);
-        lexer->result_symbol = TEMPLATE_CHARS_RAW_SLASH;
-        break;
-      default:
-        break;
-    }
+    int decision = step_template_char(lexer, quote, is_raw, single_line, recovery, has_content);
+    if (decision >= 0) return decision != 0;
     advance(lexer);
   }
+}
+
+static inline int step_template_char(TSLexer *lexer, int32_t quote, bool is_raw, bool single_line, bool recovery,
+                                     bool has_content) {
+  int32_t c = lexer->lookahead;
+  if (stops_template(c, quote, is_raw, recovery)) return finish_template(lexer, has_content);
+  if (single_line && (c == '\n' || c == '\r')) {
+    if (recovery) return 0;
+    if (!has_content) lexer->result_symbol = ERROR_RECOVERY;
+    lexer->mark_end(lexer);
+    return 1;
+  }
+  if (at_eof(lexer)) return !recovery && finish_template(lexer, has_content);
+  if (c != '\\') return -1;
+  if (!is_raw) return finish_template(lexer, has_content);
+  lexer->result_symbol = TEMPLATE_CHARS_RAW_SLASH;
+  return -1;
+}
+
+static inline bool stops_template(int32_t c, int32_t quote, bool is_raw, bool recovery) {
+  if (c == quote) return true;
+  if (recovery && (c == '\'' || c == '"')) return true;
+  return c == '$' && !is_raw;
 }
 
 static inline enum TokenType select_template_symbol(const bool *valid_symbols) {

@@ -4466,11 +4466,6 @@
     }
   },
   {
-    "type": "escape_sequence",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "expression_statement",
     "named": true,
     "fields": {},
@@ -17833,6 +17828,10 @@
   {
     "type": "enum",
     "named": false
+  },
+  {
+    "type": "escape_sequence",
+    "named": true
   },
   {
     "type": "export",

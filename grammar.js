@@ -655,7 +655,6 @@ module.exports = grammar({
         repeat(
           choice(
             $.template_chars_double_single,
-            "'",
             alias($._escape_sequence_single_line, $.escape_sequence),
             $.template_substitution,
           ),
@@ -669,7 +668,6 @@ module.exports = grammar({
         repeat(
           choice(
             $.template_chars_single_single,
-            '"',
             alias($._escape_sequence_single_line, $.escape_sequence),
             $.template_substitution,
           ),
@@ -684,7 +682,6 @@ module.exports = grammar({
           repeat(
             choice(
               $.template_chars_double,
-              "'",
               '"',
               $.escape_sequence,
               $.template_substitution,
@@ -701,7 +698,6 @@ module.exports = grammar({
           repeat(
             choice(
               $.template_chars_single,
-              '"',
               "'",
               $.escape_sequence,
               $.template_substitution,
@@ -717,11 +713,7 @@ module.exports = grammar({
         repeat(
           choice(
             $.template_chars_double_single,
-            "'",
             $.template_chars_raw_slash,
-            $._unused_escape_sequence,
-            $._sub_string_test,
-            "$",
           ),
         ),
         '"',
@@ -733,11 +725,7 @@ module.exports = grammar({
         repeat(
           choice(
             $.template_chars_single_single,
-            '"',
             $.template_chars_raw_slash,
-            $._unused_escape_sequence,
-            $._sub_string_test,
-            "$",
           ),
         ),
         "'",
@@ -750,12 +738,8 @@ module.exports = grammar({
           repeat(
             choice(
               $.template_chars_double,
-              "'",
               $.template_chars_raw_slash,
               '"',
-              $._unused_escape_sequence,
-              $._sub_string_test,
-              "$",
             ),
           ),
           '"""',
@@ -769,12 +753,8 @@ module.exports = grammar({
           repeat(
             choice(
               $.template_chars_single,
-              '"',
               "'",
               $.template_chars_raw_slash,
-              $._unused_escape_sequence,
-              $._sub_string_test,
-              "$",
             ),
           ),
           "'''",
@@ -790,13 +770,9 @@ module.exports = grammar({
         ),
       ),
 
-    _sub_string_test: (_) => seq("$", /[^a-zA-Z_{]/),
-
     identifier_dollar_escaped: (_) => /[a-zA-Z_]\w*/,
 
-    _unused_escape_sequence: (_) => escapeSequence(/[^xu]/),
-
-    escape_sequence: ($) => $._unused_escape_sequence,
+    escape_sequence: (_) => escapeSequence(/[^xu]/),
 
     _escape_sequence_single_line: (_) => escapeSequence(/[^xu\n\r]/),
 
