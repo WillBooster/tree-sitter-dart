@@ -95,11 +95,18 @@ function expectLinearErrorParse(small: string, large: string): void {
 
 function parseCpuTime(source: string): number {
   const start = process.threadCpuUsage();
-  const tree = parser.parse(source);
-  const { system, user } = process.threadCpuUsage(start);
-  if (!tree) throw new Error('The parser returned no tree');
-  const { hasError } = tree.rootNode;
-  tree.delete();
-  expect(hasError).toBe(true);
-  return system + user;
+  let elapsed = 0;
+  let parses = 0;
+  // Individual parses can finish within one CPU timer tick on Linux and ARM runners.
+  do {
+    const tree = parser.parse(source);
+    if (!tree) throw new Error('The parser returned no tree');
+    const { hasError } = tree.rootNode;
+    tree.delete();
+    expect(hasError).toBe(true);
+    parses++;
+    const { system, user } = process.threadCpuUsage(start);
+    elapsed = system + user;
+  } while (elapsed < 20_000);
+  return elapsed / parses;
 }
