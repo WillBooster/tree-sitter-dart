@@ -309,6 +309,8 @@ Await expression
 
 void main() async {
   await foo();
+  await value;
+  await(value);
 }
 
 --------------------------------------------------------------------------------
@@ -327,7 +329,16 @@ void main() async {
             (await_expression
               (call_expression
                 function: (identifier)
-                arguments: (arguments)))))))))
+                arguments: (arguments)))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (identifier))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (parenthesized_expression
+                (identifier)))))))))
 
 ================================================================================
 Throw expression
@@ -836,8 +847,18 @@ Await as an identifier
 
 void main() {
   final await = 3;
-  print(await);
+  print(await - 1);
   show(await: await);
+}
+
+int run(int Function(int) await) => await(1);
+
+void outer() async {
+  void nested() {
+    final await = 3;
+    print(await);
+  }
+  await next();
 }
 
 --------------------------------------------------------------------------------
@@ -859,7 +880,9 @@ void main() {
           (call_expression
             (identifier)
             (arguments
-              (identifier))))
+              (additive_expression
+                (identifier)
+                (decimal_integer_literal)))))
         (expression_statement
           (call_expression
             (identifier)
@@ -867,4 +890,56 @@ void main() {
               (named_argument
                 (label
                   (identifier))
-                (identifier)))))))))
+                (identifier))))))))
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (function_type
+              (type
+                (type_identifier))
+              (parameter_type_list
+                (normal_parameter_type
+                  (type
+                    (type_identifier))))))
+          (identifier))))
+    (function_body
+      (call_expression
+        (identifier)
+        (arguments
+          (decimal_integer_literal)))))
+  (function_declaration
+    (function_signature
+      (type
+        (void_type))
+      (identifier)
+      (formal_parameter_list))
+    (function_body
+      (block
+        (local_function_declaration
+          (function_signature
+            (type
+              (void_type))
+            (identifier)
+            (formal_parameter_list))
+          (function_body
+            (block
+              (local_variable_declaration
+                (initialized_variable_definition
+                  (identifier)
+                  (decimal_integer_literal)))
+              (expression_statement
+                (call_expression
+                  (identifier)
+                  (arguments
+                    (identifier)))))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (call_expression
+                (identifier)
+                (arguments)))))))))
