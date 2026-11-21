@@ -943,3 +943,65 @@ void outer() async {
               (call_expression
                 (identifier)
                 (arguments)))))))))
+
+================================================================================
+Synchronous and longer shorthand await names
+================================================================================
+
+String before(int await) => '$await';
+Future<String> after(int awaited) async => '$awaited';
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier))))
+    (function_body
+      (string_literal
+        (string_literal_single_quotes
+          (template_substitution
+            (identifier_dollar_escaped))))))
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier))))
+    (function_body
+      (string_literal
+        (string_literal_single_quotes
+          (template_substitution
+            (identifier_dollar_escaped)))))))
+
+================================================================================
+Await shorthand is reserved in an async body
+:error
+================================================================================
+
+Future<String> f(int await) async => '$await';
+
+--------------------------------------------------------------------------------
+
+================================================================================
+Await shorthand is reserved in a synchronous generator
+:error
+================================================================================
+
+Iterable<String> f(int await) sync* { yield "$await"; }
+
+--------------------------------------------------------------------------------

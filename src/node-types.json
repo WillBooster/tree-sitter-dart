@@ -1327,9 +1327,13 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "assignable_expression",
+          "named": true
+        },
         {
           "type": "call_expression",
           "named": true
@@ -1387,6 +1391,10 @@
           "named": true
         },
         {
+          "type": "negate_operator",
+          "named": true
+        },
+        {
           "type": "new_expression",
           "named": true
         },
@@ -1415,6 +1423,10 @@
           "named": true
         },
         {
+          "type": "prefix_operator",
+          "named": true
+        },
+        {
           "type": "record_literal",
           "named": true
         },
@@ -1440,10 +1452,6 @@
         },
         {
           "type": "true",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
           "named": true
         }
       ]

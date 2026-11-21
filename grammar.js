@@ -92,6 +92,7 @@ const dart = grammar({
     $.documentation_block_comment,
     $.annotation_open_paren,
     $._interpolation_start,
+    $._await_interpolation_start,
     $._instantiation_close,
     $._annotation_end,
     $._annotation_dot,
@@ -168,6 +169,7 @@ const dart = grammar({
     [$._primary, $.assignable_expression],
     [$._primary, $.labeled_statement],
     [$.assignable_expression, $.null_aware_index_expression, $._unary_expression],
+    [$.assignable_expression, $.null_aware_index_expression, $.await_expression],
     [$._type_name],
     [$._normal_formal_parameters],
     [$.typed_identifier, $._var_or_type, $._function_formal_parameter],
@@ -206,6 +208,7 @@ const dart = grammar({
     [$.type_arguments, $.relational_operator],
     [$.type_arguments, $.relational_operator, $.type_parameters],
     [$._unary_expression, $.instantiation_expression],
+    [$.await_expression, $.instantiation_expression],
     [$._record_literal_no_const, $.record_field],
     [$.record_type, $._record_literal_no_const],
     [$.record_type, $._record_literal_no_const, $.record_pattern],
@@ -853,7 +856,6 @@ const dart = grammar({
 
     for_element: ($) =>
       seq(
-        optional("await"),
         "for",
         "(", $._for_loop_parts, ")",
         field("body", $._element),
@@ -1125,7 +1127,15 @@ const dart = grammar({
 
     negate_operator: (_) => "!",
 
-    await_expression: ($) => seq("await", $._unary_expression),
+    await_expression: ($) => prec(PREC.UNARY_PREFIX, seq(
+      "await",
+      repeat(choice($.prefix_operator, $.negate_operator, "await")),
+      choice(
+        $._postfix_expression,
+        $.function_expression,
+        seq(choice("++", "--"), $.assignable_expression),
+      ),
+    )),
 
     // --- Postfix ---
 
@@ -1476,7 +1486,6 @@ const dart = grammar({
 
     for_statement: ($) =>
       seq(
-        optional("await"),
         "for",
         "(", $._for_loop_parts, ")",
         field("body", $._statement),
@@ -2409,7 +2418,7 @@ const dart = grammar({
         "operator", "part", "required", "set", "show",
         "static", "typedef",
         // Category 3: context keywords
-        "await", "hide", "native", "on", "sealed", "when", "base", "inline", "type", "augment",
+        "hide", "native", "on", "sealed", "when", "base", "inline", "type", "augment",
       ),
 
     identifier: ($) => choice($._name, prec.dynamic(-1, $._built_in_identifier)),
@@ -2486,7 +2495,8 @@ function awaitVariants(body) {
     }
   }
   const variants = new Map();
-  const pending = ["identifier", "_built_in_identifier", "unary_expression", "await_expression"];
+  const pending = ["identifier", "unary_expression", "await_expression",
+    "for_element", "for_statement", "template_substitution"];
   while (pending.length > 0) {
     const name = pending.pop();
     if (variants.has(name)) continue;
@@ -2516,10 +2526,17 @@ function awaitRules(rules, variants) {
   const unary = scopedRules.await_unary_expression;
   scopedRules.await_unary_expression = ($) =>
     choice(unary($), prec(PREC.UNARY_PREFIX, alias($.await_await_expression, $.await_expression)));
-  scopedRules._await_built_in_identifier = () =>
-    choice(...rules._built_in_identifier.members.filter(({ value }) => value !== "await"));
   scopedRules.await_identifier = ($) =>
-    choice(reserved("await", $._name), prec.dynamic(-1, $._await_built_in_identifier));
+    choice(reserved("await", $._name), prec.dynamic(-1, $._built_in_identifier));
+  for (const name of ["for_element", "for_statement"]) {
+    const variant = variants.get(name);
+    const loop = scopedRules[variant];
+    scopedRules[variant] = ($) => seq(optional("await"), loop($));
+  }
+  scopedRules.await_template_substitution = ($) => seq(
+    alias($._await_interpolation_start, "$"),
+    choice(seq("{", $._await_expression, "}"), $.identifier_dollar_escaped),
+  );
   return scopedRules;
 }
 
