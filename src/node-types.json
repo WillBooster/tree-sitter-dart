@@ -1327,15 +1327,11 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
-          "type": "_instantiation",
-          "named": true
-        },
-        {
-          "type": "_literal",
+          "type": "assignable_expression",
           "named": true
         },
         {
@@ -1343,11 +1339,35 @@
           "named": true
         },
         {
+          "type": "const_object_expression",
+          "named": true
+        },
+        {
+          "type": "constructor_invocation",
+          "named": true
+        },
+        {
           "type": "constructor_tearoff",
           "named": true
         },
         {
+          "type": "decimal_floating_point_literal",
+          "named": true
+        },
+        {
+          "type": "decimal_integer_literal",
+          "named": true
+        },
+        {
+          "type": "false",
+          "named": true
+        },
+        {
           "type": "function_expression",
+          "named": true
+        },
+        {
+          "type": "hex_integer_literal",
           "named": true
         },
         {
@@ -1363,7 +1383,19 @@
           "named": true
         },
         {
+          "type": "list_literal",
+          "named": true
+        },
+        {
           "type": "member_expression",
+          "named": true
+        },
+        {
+          "type": "negate_operator",
+          "named": true
+        },
+        {
+          "type": "new_expression",
           "named": true
         },
         {
@@ -1379,6 +1411,10 @@
           "named": true
         },
         {
+          "type": "null_literal",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
           "named": true
         },
@@ -1387,7 +1423,23 @@
           "named": true
         },
         {
+          "type": "prefix_operator",
+          "named": true
+        },
+        {
+          "type": "record_literal",
+          "named": true
+        },
+        {
+          "type": "set_or_map_literal",
+          "named": true
+        },
+        {
           "type": "static_member_shorthand",
+          "named": true
+        },
+        {
+          "type": "string_literal",
           "named": true
         },
         {
@@ -1395,7 +1447,11 @@
           "named": true
         },
         {
-          "type": "unary_expression",
+          "type": "symbol_literal",
+          "named": true
+        },
+        {
+          "type": "true",
           "named": true
         }
       ]

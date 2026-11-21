@@ -10,6 +10,7 @@ enum TokenType {
   DOCUMENTATION_BLOCK_COMMENT,
   ANNOTATION_OPEN_PAREN,
   INTERPOLATION_START,
+  AWAIT_INTERPOLATION_START,
   INSTANTIATION_CLOSE,
   ANNOTATION_END,
   ANNOTATION_DOT,
@@ -31,7 +32,9 @@ static inline bool stops_template(int32_t c, int32_t quote, bool is_raw, bool re
 static inline enum TokenType select_template_symbol(const bool *valid_symbols);
 static inline bool finish_template(TSLexer *lexer, bool has_content);
 static bool scan_annotation_boundary(TSLexer *lexer, const bool *valid_symbols);
-static bool scan_interpolation_start(TSLexer *lexer);
+static bool scan_interpolation_start(TSLexer *lexer, bool await_reserved);
+static bool scan_await(TSLexer *lexer);
+static inline bool is_identifier_char(int32_t c);
 static bool scan_multiline_comments(TSLexer *lexer);
 static bool scan_instantiation_close(TSLexer *lexer);
 static bool skip_trivia(TSLexer *lexer);
@@ -44,8 +47,9 @@ static inline void advance(TSLexer *lexer);
 bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
                                                   const bool *valid_symbols) {
   (void)payload;
-  if (valid_symbols[INTERPOLATION_START] && !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '$') {
-    return scan_interpolation_start(lexer);
+  if ((valid_symbols[INTERPOLATION_START] || valid_symbols[AWAIT_INTERPOLATION_START]) &&
+      !valid_symbols[ERROR_RECOVERY] && lexer->lookahead == '$') {
+    return scan_interpolation_start(lexer, valid_symbols[AWAIT_INTERPOLATION_START]);
   }
   if (valid_symbols[TEMPLATE_CHARS_DOUBLE] || valid_symbols[TEMPLATE_CHARS_SINGLE] ||
       valid_symbols[TEMPLATE_CHARS_DOUBLE_SINGLE] || valid_symbols[TEMPLATE_CHARS_SINGLE_SINGLE]) {
@@ -76,13 +80,27 @@ bool tree_sitter_dart_external_scanner_scan(void *payload, TSLexer *lexer,
   return false;
 }
 
-static bool scan_interpolation_start(TSLexer *lexer) {
+static bool scan_interpolation_start(TSLexer *lexer, bool await_reserved) {
   advance(lexer);
   int32_t next = lexer->lookahead;
   if (next != '{' && next != '_' && (((uint32_t)next | 32u) - 'a') >= 26u) return false;
   lexer->mark_end(lexer);
-  lexer->result_symbol = INTERPOLATION_START;
+  if (await_reserved && next == 'a' && scan_await(lexer) && !is_identifier_char(lexer->lookahead)) return false;
+  lexer->result_symbol = await_reserved ? AWAIT_INTERPOLATION_START : INTERPOLATION_START;
   return true;
+}
+
+static bool scan_await(TSLexer *lexer) {
+  const char *word = "await";
+  while (*word && *word == lexer->lookahead) {
+    advance(lexer);
+    word++;
+  }
+  return !*word;
+}
+
+static inline bool is_identifier_char(int32_t c) {
+  return c == '_' || (((uint32_t)c | 32u) - 'a') < 26u || (uint32_t)c - '0' < 10u;
 }
 
 static bool scan_templates(TSLexer *lexer, const bool *valid_symbols) {

@@ -309,6 +309,10 @@ Await expression
 
 void main() async {
   await foo();
+  await value;
+  await(value);
+  print(#await);
+  print(#module.await);
 }
 
 --------------------------------------------------------------------------------
@@ -327,7 +331,29 @@ void main() async {
             (await_expression
               (call_expression
                 function: (identifier)
-                arguments: (arguments)))))))))
+                arguments: (arguments)))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (identifier))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (parenthesized_expression
+                (identifier)))))
+        (expression_statement
+          (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (symbol_literal
+                (identifier)))))
+        (expression_statement
+          (call_expression
+            function: (identifier)
+            arguments: (arguments
+              (symbol_literal
+                (identifier)
+                (identifier)))))))))
 
 ================================================================================
 Throw expression
@@ -829,3 +855,168 @@ void main() {
                 body: (function_expression_body
                   (block)))
               property: (identifier))))))))
+
+================================================================================
+Await as an identifier
+================================================================================
+
+void main() {
+  final await = 3;
+  print(await - 1);
+  show(await: await);
+}
+
+int run(int Function(int) await) => await(1);
+
+void outer() async {
+  void nested() {
+    final await = 3;
+    print(await);
+  }
+  await next();
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (function_signature
+      (type
+        (void_type))
+      (identifier)
+      (formal_parameter_list))
+    (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            (identifier)
+            (decimal_integer_literal)))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (arguments
+              (additive_expression
+                (identifier)
+                (decimal_integer_literal)))))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (arguments
+              (named_argument
+                (label
+                  (identifier))
+                (identifier))))))))
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (function_type
+              (type
+                (type_identifier))
+              (parameter_type_list
+                (normal_parameter_type
+                  (type
+                    (type_identifier))))))
+          (identifier))))
+    (function_body
+      (call_expression
+        (identifier)
+        (arguments
+          (decimal_integer_literal)))))
+  (function_declaration
+    (function_signature
+      (type
+        (void_type))
+      (identifier)
+      (formal_parameter_list))
+    (function_body
+      (block
+        (local_function_declaration
+          (function_signature
+            (type
+              (void_type))
+            (identifier)
+            (formal_parameter_list))
+          (function_body
+            (block
+              (local_variable_declaration
+                (initialized_variable_definition
+                  (identifier)
+                  (decimal_integer_literal)))
+              (expression_statement
+                (call_expression
+                  (identifier)
+                  (arguments
+                    (identifier)))))))
+        (expression_statement
+          (unary_expression
+            (await_expression
+              (call_expression
+                (identifier)
+                (arguments)))))))))
+
+================================================================================
+Synchronous and longer shorthand await names
+================================================================================
+
+String before(int await) => '$await';
+Future<String> after(int awaited) async => '$awaited';
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier))))
+    (function_body
+      (string_literal
+        (string_literal_single_quotes
+          (template_substitution
+            (identifier_dollar_escaped))))))
+  (function_declaration
+    (function_signature
+      (type
+        (type_identifier)
+        (type_arguments
+          (type
+            (type_identifier))))
+      (identifier)
+      (formal_parameter_list
+        (formal_parameter
+          (type
+            (type_identifier))
+          (identifier))))
+    (function_body
+      (string_literal
+        (string_literal_single_quotes
+          (template_substitution
+            (identifier_dollar_escaped)))))))
+
+================================================================================
+Await shorthand is reserved in an async body
+:error
+================================================================================
+
+Future<String> f(int await) async => '$await';
+
+--------------------------------------------------------------------------------
+
+================================================================================
+Await shorthand is reserved in a synchronous generator
+:error
+================================================================================
+
+Iterable<String> f(int await) sync* { yield "$await"; }
+
+--------------------------------------------------------------------------------

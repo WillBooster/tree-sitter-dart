@@ -35,6 +35,14 @@ test('recovers from an error on each line in linear time', { timeout: 60_000 }, 
   expectLinearErrorParse('$ a\n'.repeat(2000), '$ a\n'.repeat(20_000));
 });
 
+test('recovers from incomplete await operands in linear time', { timeout: 60_000 }, () => {
+  expectLinearErrorParse(incompleteAwait(2000), incompleteAwait(20_000));
+});
+
+test('recovers from incomplete await operands before another function in linear time', { timeout: 60_000 }, () => {
+  expectLinearErrorParse(awaitRecoveryWithSuffix(2000), awaitRecoveryWithSuffix(20_000));
+});
+
 test('retains coalesced content in unterminated strings without re-lexing opposite quotes', { timeout: 60_000 }, () => {
   for (const [opener, line] of [
     ["const html = r'''\n", '<div class="name">text</div>\n'],
@@ -80,6 +88,15 @@ test('retains coalesced content in unterminated strings without re-lexing opposi
     }
   }
 });
+
+function incompleteAwait(count: number): string {
+  return `void f() async { print(${'await - '.repeat(count)}); }`;
+}
+
+function awaitRecoveryWithSuffix(count: number): string {
+  const argumentsList = Array.from({ length: count }, () => 'await').join(', ');
+  return `void before() async { value = ${'await - '.repeat(2000)}; }\nvoid after() { before(${argumentsList}); }`;
+}
 
 function expectLinearErrorParse(small: string, large: string): void {
   parseCpuTime(large);
