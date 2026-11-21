@@ -15103,13 +15103,8 @@
           "value": "string_literal"
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "await_symbol_literal"
-          },
-          "named": true,
-          "value": "symbol_literal"
+          "type": "SYMBOL",
+          "name": "symbol_literal"
         },
         {
           "type": "ALIAS",
@@ -18416,13 +18411,8 @@
           ]
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "await_symbol_literal"
-          },
-          "named": true,
-          "value": "symbol_literal"
+          "type": "SYMBOL",
+          "name": "symbol_literal"
         },
         {
           "type": "SEQ",
@@ -24561,84 +24551,6 @@
           "value": ";"
         }
       ]
-    },
-    "await_symbol_literal": {
-      "type": "PREC_RIGHT",
-      "value": 0,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "#"
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "ALIAS",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "await_identifier"
-                    },
-                    "named": true,
-                    "value": "identifier"
-                  },
-                  {
-                    "type": "REPEAT",
-                    "content": {
-                      "type": "SEQ",
-                      "members": [
-                        {
-                          "type": "STRING",
-                          "value": "."
-                        },
-                        {
-                          "type": "ALIAS",
-                          "content": {
-                            "type": "SYMBOL",
-                            "name": "await_identifier"
-                          },
-                          "named": true,
-                          "value": "identifier"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "ALIAS",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "void_type"
-                },
-                "named": true,
-                "value": "identifier"
-              },
-              {
-                "type": "STRING",
-                "value": "~"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "binary_operator"
-              },
-              {
-                "type": "STRING",
-                "value": "[]"
-              },
-              {
-                "type": "STRING",
-                "value": "[]="
-              }
-            ]
-          }
-        ]
-      }
     },
     "_await_declared_name": {
       "type": "FIELD",

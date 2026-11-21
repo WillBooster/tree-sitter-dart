@@ -2443,7 +2443,9 @@ module.exports = withAwaitContexts(dart);
 
 function withAwaitContexts(base) {
   const { rules, reserved: reservedWords } = base.grammar;
-  const boundaries = new Set(["function_body", "function_expression_body", "_function_primary_body"]);
+  const boundaries = new Set([
+    "function_body", "function_expression_body", "_function_primary_body", "symbol_literal",
+  ]);
   const body = bodyDependencies(rules, boundaries);
   const variants = awaitVariants(body);
   return grammar(base, {
