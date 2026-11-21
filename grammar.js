@@ -121,6 +121,7 @@ module.exports = grammar({
   ],
 
   conflicts: ($) => [
+    [$.await_expression, $._built_in_identifier],
     [$._type_not_void_not_function],
     [$._function_type_tail],
     [$._type_not_void_not_function, $._function_type_tail],
@@ -2400,7 +2401,7 @@ module.exports = grammar({
     // The raw regex for word-like tokens - used as the `word` rule
     _name: (_) => /[a-zA-Z_$][\w$]*/,
 
-    // Dart built-in identifiers (category 2) and context keywords (category 3)
+    // Contextual keywords that can also appear as identifiers.
     _built_in_identifier: (_) =>
       choice(
         // Category 2: built-in identifiers
@@ -2410,7 +2411,7 @@ module.exports = grammar({
         "operator", "part", "required", "set", "show",
         "static", "typedef",
         // Category 3: context keywords
-        "hide", "native", "on", "sealed", "when", "base", "inline", "type", "augment",
+        "await", "hide", "native", "on", "sealed", "when", "base", "inline", "type", "augment",
       ),
 
     identifier: ($) => choice($._name, prec.dynamic(-1, $._built_in_identifier)),

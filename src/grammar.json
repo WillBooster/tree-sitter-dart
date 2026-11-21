@@ -14777,6 +14777,10 @@
         },
         {
           "type": "STRING",
+          "value": "await"
+        },
+        {
+          "type": "STRING",
           "value": "hide"
         },
         {
@@ -14881,6 +14885,10 @@
     }
   ],
   "conflicts": [
+    [
+      "await_expression",
+      "_built_in_identifier"
+    ],
     [
       "_type_not_void_not_function"
     ],

@@ -829,3 +829,42 @@ void main() {
                 body: (function_expression_body
                   (block)))
               property: (identifier))))))))
+
+================================================================================
+Await as an identifier
+================================================================================
+
+void main() {
+  final await = 3;
+  print(await);
+  show(await: await);
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (function_signature
+      (type
+        (void_type))
+      (identifier)
+      (formal_parameter_list))
+    (function_body
+      (block
+        (local_variable_declaration
+          (initialized_variable_definition
+            (identifier)
+            (decimal_integer_literal)))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (arguments
+              (identifier))))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (arguments
+              (named_argument
+                (label
+                  (identifier))
+                (identifier)))))))))
