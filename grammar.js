@@ -79,7 +79,7 @@ function postfixChainWrappers(base, prefix) {
   };
 }
 
-module.exports = grammar({
+const dart = grammar({
   name: "dart",
 
   externals: ($) => [
@@ -92,6 +92,7 @@ module.exports = grammar({
     $.documentation_block_comment,
     $.annotation_open_paren,
     $._interpolation_start,
+    $._await_interpolation_start,
     $._instantiation_close,
     $._annotation_end,
     $._annotation_dot,
@@ -168,6 +169,7 @@ module.exports = grammar({
     [$._primary, $.assignable_expression],
     [$._primary, $.labeled_statement],
     [$.assignable_expression, $.null_aware_index_expression, $._unary_expression],
+    [$.assignable_expression, $.null_aware_index_expression, $.await_expression],
     [$._type_name],
     [$._normal_formal_parameters],
     [$.typed_identifier, $._var_or_type, $._function_formal_parameter],
@@ -206,6 +208,7 @@ module.exports = grammar({
     [$.type_arguments, $.relational_operator],
     [$.type_arguments, $.relational_operator, $.type_parameters],
     [$._unary_expression, $.instantiation_expression],
+    [$.await_expression, $.instantiation_expression],
     [$._record_literal_no_const, $.record_field],
     [$.record_type, $._record_literal_no_const],
     [$.record_type, $._record_literal_no_const, $.record_pattern],
@@ -853,7 +856,6 @@ module.exports = grammar({
 
     for_element: ($) =>
       seq(
-        optional("await"),
         "for",
         "(", $._for_loop_parts, ")",
         field("body", $._element),
@@ -1116,7 +1118,6 @@ module.exports = grammar({
         choice(
           seq($.prefix_operator, $._unary_expression),
           seq($.negate_operator, $._unary_expression),
-          $.await_expression,
           seq(choice("-", "~"), "super"),
           seq(choice("++", "--"), $.assignable_expression),
         ),
@@ -1126,7 +1127,15 @@ module.exports = grammar({
 
     negate_operator: (_) => "!",
 
-    await_expression: ($) => seq("await", $._unary_expression),
+    await_expression: ($) => prec(PREC.UNARY_PREFIX, seq(
+      "await",
+      repeat(choice($.prefix_operator, $.negate_operator, "await")),
+      choice(
+        $._postfix_expression,
+        $.function_expression,
+        seq(choice("++", "--"), $.assignable_expression),
+      ),
+    )),
 
     // --- Postfix ---
 
@@ -1477,7 +1486,6 @@ module.exports = grammar({
 
     for_statement: ($) =>
       seq(
-        optional("await"),
         "for",
         "(", $._for_loop_parts, ")",
         field("body", $._statement),
@@ -2400,7 +2408,7 @@ module.exports = grammar({
     // The raw regex for word-like tokens - used as the `word` rule
     _name: (_) => /[a-zA-Z_$][\w$]*/,
 
-    // Dart built-in identifiers (category 2) and context keywords (category 3)
+    // Contextual keywords that can also appear as identifiers.
     _built_in_identifier: (_) =>
       choice(
         // Category 2: built-in identifiers
@@ -2430,6 +2438,122 @@ module.exports = grammar({
       ),
   },
 });
+
+module.exports = withAwaitContexts(dart);
+
+function withAwaitContexts(base) {
+  const { rules, reserved: reservedWords } = base.grammar;
+  const boundaries = new Set([
+    "function_body", "function_expression_body", "_function_primary_body", "symbol_literal",
+  ]);
+  const body = bodyDependencies(rules, boundaries);
+  const variants = awaitVariants(body);
+  return grammar(base, {
+    name: "dart",
+    reserved: { await: () => [...reservedWords.global, "await"] },
+    conflicts: ($, original) => awaitConflicts($, original, variants, body, boundaries),
+    rules: {
+      ...awaitRules(rules, variants),
+      function_expression_body: ($) => choice(
+        seq("=>", $._expression),
+        seq("async", "=>", $._await_expression),
+      ),
+      _function_primary_body: ($) => choice(
+        $.block,
+        seq(choice("async", "async*", "sync*"), alias($.await_block, $.block)),
+      ),
+      function_body: ($) => choice(
+        seq("=>", $._expression, ";"),
+        seq("async", "=>", $._await_expression, ";"),
+        $.block,
+        seq(choice("async", "async*", "sync*"), alias($.await_block, $.block)),
+        $.native,
+      ),
+    },
+  });
+}
+
+function bodyDependencies(rules, boundaries) {
+  const children = new Map();
+  const pending = ["block", "_expression", "await_expression"];
+  while (pending.length > 0) {
+    const name = pending.pop();
+    if (children.has(name) || boundaries.has(name) || !Object.hasOwn(rules, name)) continue;
+    const references = new Set();
+    visitRule(rules[name], (symbol) => references.add(symbol));
+    children.set(name, references);
+    pending.push(...references);
+  }
+  return children;
+}
+
+// Only the rules that can reach a contextual identifier or unary expression need a second variant.
+function awaitVariants(body) {
+  const parents = new Map();
+  for (const [name, children] of body) {
+    for (const child of children) {
+      if (!parents.has(child)) parents.set(child, []);
+      parents.get(child).push(name);
+    }
+  }
+  const variants = new Map();
+  const pending = ["identifier", "unary_expression", "await_expression",
+    "for_element", "for_statement", "template_substitution"];
+  while (pending.length > 0) {
+    const name = pending.pop();
+    if (variants.has(name)) continue;
+    variants.set(name, name.startsWith("_") ? `_await${name}` : `await_${name}`);
+    pending.push(...(parents.get(name) ?? []));
+  }
+  return variants;
+}
+
+function awaitConflicts($, original, variants, body, boundaries) {
+  const local = original.filter((group) =>
+    group.some(({ name }) => variants.has(name)) &&
+    group.every(({ name }) => body.has(name) || boundaries.has(name))
+  );
+  return [...original, ...local.map((group) => group.map(({ name }) => $[variants.get(name) ?? name]))];
+}
+
+function awaitRules(rules, variants) {
+  const scopedRules = {};
+  for (const [name, variant] of variants) {
+    scopedRules[variant] = ($) => mapRule(rules[name], (symbol, aliased) => {
+      const alternate = variants.get(symbol);
+      if (!alternate) return $[symbol];
+      return !aliased && !symbol.startsWith("_") ? alias($[alternate], $[symbol]) : $[alternate];
+    });
+  }
+  const unary = scopedRules.await_unary_expression;
+  scopedRules.await_unary_expression = ($) =>
+    choice(unary($), prec(PREC.UNARY_PREFIX, alias($.await_await_expression, $.await_expression)));
+  scopedRules.await_identifier = ($) =>
+    choice(reserved("await", $._name), prec.dynamic(-1, $._built_in_identifier));
+  for (const name of ["for_element", "for_statement"]) {
+    const variant = variants.get(name);
+    const loop = scopedRules[variant];
+    scopedRules[variant] = ($) => seq(optional("await"), loop($));
+  }
+  scopedRules.await_template_substitution = ($) => seq(
+    alias($._await_interpolation_start, "$"),
+    choice(seq("{", $._await_expression, "}"), $.identifier_dollar_escaped),
+  );
+  return scopedRules;
+}
+
+function visitRule(rule, visit) {
+  if (rule.type === "SYMBOL") visit(rule.name);
+  if (rule.content) visitRule(rule.content, visit);
+  for (const member of rule.members ?? []) visitRule(member, visit);
+}
+
+function mapRule(rule, map, aliased = false) {
+  if (rule.type === "SYMBOL") return map(rule.name, aliased);
+  if (rule.content) return { ...rule, content: mapRule(rule.content, map, rule.type === "ALIAS") };
+  if (rule.members) return { ...rule, members: rule.members.map((member) => mapRule(member, map)) };
+  return rule;
+}
 
 function escapeSequence(anyChar) {
   return token.immediate(seq("\\", choice(

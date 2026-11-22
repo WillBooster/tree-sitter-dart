@@ -125,8 +125,7 @@ and the release build regenerate the parsers before compiling them.
 
 - the corpus in `test/corpus`, with the native build and with the Wasm build (the first run downloads the WASI SDK);
 - a check that the real-world Dart files in `examples/` fail to parse exactly as listed in
-  `script/known-failures.txt`, which is empty now. The first run clones the repositories. The example repositories are pinned to commits in
-  `script/parse-examples`. After a grammar change or a moved pin alters that list, `script/parse-examples` rewrites it;
+  `script/known-failures.txt`. The first run clones the repositories at the commits pinned in `script/parse-examples`. After a grammar change or a moved pin alters that list, `script/parse-examples` rewrites it;
   review its diff before committing;
 - a performance check (`test/unit/performance.test.ts`) that recovering from an error on each line takes linear
   time, since consumers parse files while they are being edited. It loads the Wasm build through
